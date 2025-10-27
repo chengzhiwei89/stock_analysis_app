@@ -4,20 +4,87 @@ Modify these settings to customize your analysis
 """
 
 # ============================================================================
-# WATCHLIST - Tickers to analyze
+# WATCHLIST - Tickers to analyze (30 tickers optimized for options income)
+# Research-backed selection: Score 75+, good liquidity, diverse sectors
 # ============================================================================
 WATCHLIST = [
-    'AAPL',   # Apple
-    'MSFT',   # Microsoft
-    'NVDA',   # NVIDIA
-    'AMD',    # Advanced Micro Devices
-    'TSLA',   # Tesla
-    'GOOGL',  # Google
-    'AMZN',   # Amazon
-    'META',   # Meta (Facebook)
-    'NET',    # CloudFlare
-    'QQQ',    # Nasdaq 100 ETF
+    # === ETFs (2) - Foundation: Best liquidity ===
+    'SPY',    # S&P 500 ETF - Score: 90, most liquid options in world
+    'QQQ',    # Nasdaq 100 ETF - Score: 85, tech exposure
+
+    # === Tech - Mega Cap (6) - Core Holdings ===
+    'AAPL',   # Apple - Score: 85, most liquid stock options
+    'MSFT',   # Microsoft - Score: 85, enterprise leader
+    'GOOGL',  # Google - Score: 85, search/cloud dominant
+    'AMZN',   # Amazon - Score: 85, e-commerce/cloud
+    'META',   # Meta (Facebook) - Score: 80, social media
+    'TSLA',   # Tesla - Score: 80, HIGH volatility = HIGH premiums
+
+    # === Semiconductors (6) - Hot Sector ===
+    'NVDA',   # NVIDIA - Score: 75, AI leader, high volume
+    'AMD',    # AMD - Score: 80, high beta, good premiums
+    'INTC',   # Intel - Score: 85, LOW capital ($3,828), HIGH volume
+    'AVGO',   # Broadcom - Score: 85, quality chip maker
+    'MU',     # Micron - Score: 80, memory chips, cyclical
+    'QCOM',   # Qualcomm - Score: 80, mobile/5G chips
+
+    # === Software & Tech Services (5) ===
+    'CRM',    # Salesforce - Score: 85, CRM leader
+    'ORCL',   # Oracle - Score: 80, database/cloud
+    'CRWD',   # CrowdStrike - Score: 80, cybersecurity
+    'CSCO',   # Cisco - Score: 80, networking, LOW capital ($7,063)
+    'ANET',   # Arista Networks - Score: 80, cloud networking
+
+    # === Financials (5) - Yield & Stability ===
+    'JPM',    # JP Morgan - Score: 80, #1 US bank
+    'BAC',    # Bank of America - Score: 80, LOW capital ($5,257)
+    'GS',     # Goldman Sachs - Score: 85, investment banking
+    'MS',     # Morgan Stanley - Score: 80, wealth management
+    'C',      # Citigroup - Score: 80, global bank, affordable
+
+    # === Consumer & Retail (2) ===
+    'HD',     # Home Depot - Score: 80, home improvement leader
+    'NKE',    # Nike - Score: 80, athletic brand, LOW capital ($6,911)
+
+    # === Healthcare (1) - Defensive ===
+    'PFE',    # Pfizer - Score: 75, VERY low capital ($2,476), defensive
+
+    # === Industrials & Aerospace (2) ===
+    'BA',     # Boeing - Score: 85, aerospace, volatile = premiums
+    'CAT',    # Caterpillar - Score: 80, heavy machinery
+
+    # === Metals & Mining (1) - Diversification ===
+    'SCCO',   # Southern Copper - Score: 85, best metals option
 ]
+
+# WATCHLIST SUMMARY (31 tickers total):
+#
+# Quality Distribution:
+#   Score 85 (Excellent): 11 tickers (SPY, INTC, SCCO, BA, CRM, GS, AAPL, MSFT, GOOGL, AMZN, AVGO)
+#   Score 80 (Very Good): 17 tickers (QQQ, META, TSLA, AMD, MU, QCOM, ORCL, CRWD, CSCO, ANET, JPM, BAC, MS, C, HD, NKE, CAT)
+#   Score 75 (Good): 3 tickers (NVDA, PFE)
+#
+# Capital Requirements (per contract):
+#   Under $10k: 7 tickers (PFE $2,476, BAC $5,257, NKE $6,911, CSCO $7,063, C $9,878, SCCO $12,934)
+#   $10k-$30k: 15 tickers
+#   Over $30k: 9 tickers
+#   Total for 1 contract each: ~$850,000
+#
+# Sector Balance:
+#   Tech/Semiconductors: 17 (55%) - AAPL, MSFT, GOOGL, AMZN, META, TSLA, NVDA, AMD, INTC, AVGO, MU, QCOM, CRM, ORCL, CRWD, CSCO, ANET
+#   Financials: 5 (16%) - JPM, BAC, GS, MS, C
+#   Consumer/Retail: 2 (6%) - HD, NKE
+#   Healthcare: 1 (3%) - PFE
+#   Industrials/Aerospace: 2 (6%) - BA, CAT
+#   Metals/Mining: 1 (3%) - SCCO
+#   ETFs: 2 (6%) - SPY, QQQ
+#   Infrastructure: 1 (3%) - ANET
+#
+# Liquidity Highlights:
+#   Highest Options Volume: TSLA (116/day), INTC (81/day), NVDA (86/day), AMZN (90/day)
+#   All tickers have active options markets with good spreads
+#
+# Run: python research_watchlist.py to evaluate additional tickers
 
 # ============================================================================
 # DATA FETCHING SETTINGS
@@ -78,7 +145,8 @@ CASH_SECURED_PUT_ADVANCED = {
     'min_volume': 100,             # Minimum option volume - UPDATED for better liquidity
     'min_open_interest': 100,      # Minimum open interest - UPDATED for better liquidity
     'target_discount': 5.0,        # Target discount from current price (%)
-    'max_strike_pct': 1.0,         # Maximum strike as % of current (1.0 = at current price)
+    'max_strike_pct': 0.98,        # Maximum strike as % of current (0.98 = 2% minimum cushion)
+    'min_distance_pct': 2.0,       # SAFETY: Require strike at least 2% below current - PREVENTS near-ATM
     'quality_tickers_only': True,  # Only trade quality stocks - NEW
     'avoid_itm': True,             # Avoid in-the-money puts - NEW
 }

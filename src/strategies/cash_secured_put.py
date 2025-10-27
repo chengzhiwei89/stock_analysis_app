@@ -174,6 +174,17 @@ class CashSecuredPutAnalyzer:
         if min_prob_otm is not None and 'prob_otm' in filtered.columns:
             filtered = filtered[filtered['prob_otm'] >= min_prob_otm]
 
+        # SAFETY FILTER: Require minimum distance from current price (prevents near-ATM)
+        # For PUTS: distance_pct is NEGATIVE when OTM (strike < current)
+        # We want absolute distance, so check: abs(distance_pct) >= min_distance
+        if 'distance_pct' in filtered.columns:
+            from config import CASH_SECURED_PUT_ADVANCED
+            min_distance = CASH_SECURED_PUT_ADVANCED.get('min_distance_pct', 0)
+            if min_distance > 0:
+                # For puts, strike < current means OTM with negative distance_pct
+                # Use abs() to get actual distance regardless of sign
+                filtered = filtered[abs(filtered['distance_pct']) >= min_distance]
+
         if filtered.empty:
             return pd.DataFrame()
 
