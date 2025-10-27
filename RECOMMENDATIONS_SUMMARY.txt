@@ -1,0 +1,115 @@
+================================================================================
+RECOMMENDATIONS AUTO-SAVE FEATURE - QUICK SUMMARY
+================================================================================
+
+✅ AUTOMATICALLY ENABLED
+
+All analysis recommendations are now automatically saved to:
+  data/recommendations/
+
+================================================================================
+WHAT GETS SAVED
+================================================================================
+
+When you run:
+  • python quick_start.py        → Saves CC, CSP, and Wheel recommendations
+  • python my_portfolio_setup.py → Saves NVDA covered call opportunities
+  • Any custom analysis          → Can manually save with RecommendationsManager
+
+File types saved:
+  ✓ CSV files  - Easy to open in Excel
+  ✓ JSON metadata  - Contains criteria and analysis details
+  ✓ Excel files (combined)  - All strategies in one workbook
+
+================================================================================
+VIEWING SAVED RECOMMENDATIONS
+================================================================================
+
+Command Line:
+  python view_recommendations.py list                    # List all saved files
+  python view_recommendations.py view --strategy cc      # View covered calls
+  python view_recommendations.py search --ticker NVDA    # Search by ticker
+  python view_recommendations.py export --strategy cc    # Export to Excel
+
+Python Code:
+  from src.data.recommendations_manager import RecommendationsManager
+
+  rec_manager = RecommendationsManager()
+  cc_results = rec_manager.load_latest_recommendation('cc')
+  print(cc_results.head())
+
+Direct Access:
+  • Open CSV files in data/recommendations/ with Excel
+  • Files are named: {strategy}_{ticker}_{timestamp}.csv
+
+================================================================================
+CONFIGURATION
+================================================================================
+
+Edit config.py to customize:
+
+  RECOMMENDATIONS_SETTINGS = {
+      'auto_save': True,              # Enable/disable auto-save
+      'save_directory': 'data/recommendations',
+      'save_excel': True,             # Also save Excel files
+      'keep_days': 30,                # Auto-cleanup after 30 days
+  }
+
+================================================================================
+YOUR NVDA POSITION
+================================================================================
+
+When you run:
+  python my_portfolio_setup.py
+
+Your NVDA covered call analysis (120 shares @ $100 cost basis) will be
+automatically saved to:
+  data/recommendations/cc_NVDA_{timestamp}.csv
+
+You can then:
+  • Open in Excel to review opportunities
+  • Track which trades you execute
+  • Compare opportunities over time
+  • Build your trading log
+
+================================================================================
+BENEFITS
+================================================================================
+
+✓ Historical tracking  - Compare opportunities over time
+✓ No data loss  - Never lose analysis results
+✓ Easy sharing  - Send CSV/Excel files to others
+✓ Trading journal  - Build your own trading log
+✓ Performance analysis  - Track what worked
+✓ Backup analysis  - Always have past results
+
+================================================================================
+QUICK START
+================================================================================
+
+1. Run analysis:
+     python quick_start.py
+
+2. View saved recommendations:
+     python view_recommendations.py
+
+3. Check what was saved:
+     ls data/recommendations/
+
+4. Open in Excel:
+     Open data/recommendations/*.csv or *.xlsx
+
+================================================================================
+MORE INFO
+================================================================================
+
+Full documentation: RECOMMENDATIONS_GUIDE.md
+
+Examples:
+  • View latest CC recommendations for NVDA
+  • Export to Excel for further analysis
+  • Clean up old files
+  • Track performance over time
+  • Build trading logs
+
+================================================================================

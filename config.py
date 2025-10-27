@@ -1,0 +1,301 @@
+"""
+Configuration Settings
+Modify these settings to customize your analysis
+"""
+
+# ============================================================================
+# WATCHLIST - Tickers to analyze
+# ============================================================================
+WATCHLIST = [
+    'AAPL',   # Apple
+    'MSFT',   # Microsoft
+    'NVDA',   # NVIDIA
+    'AMD',    # Advanced Micro Devices
+    'TSLA',   # Tesla
+    'GOOGL',  # Google
+    'AMZN',   # Amazon
+    'META',   # Meta (Facebook)
+    'NET',    # CloudFlare
+    'QQQ',    # Nasdaq 100 ETF
+]
+
+# ============================================================================
+# DATA FETCHING SETTINGS
+# ============================================================================
+NUM_EXPIRATIONS = 6  # Number of expiration dates to fetch per ticker (increased for more options)
+DATA_DIR = "data/option_chains"  # Directory for storing options data
+PORTFOLIO_DIR = "data/portfolio"  # Directory for portfolio data
+
+# ============================================================================
+# COVERED CALL CRITERIA
+# ============================================================================
+COVERED_CALL_SETTINGS = {
+    'min_premium': 0.50,           # Minimum premium per share ($)
+    'min_annual_return': 15.0,     # Minimum annualized return (%)
+    'max_days': 45,                # Maximum days to expiration
+    'min_delta': None,             # Minimum delta (e.g., 0.2) - None to disable
+    'max_delta': None,             # Maximum delta (e.g., 0.4) - None to disable
+    'top_n': 20,                   # Number of top opportunities to display
+}
+
+# Advanced covered call filters
+COVERED_CALL_ADVANCED = {
+    'min_volume': 10,              # Minimum option volume for liquidity
+    'min_open_interest': 50,       # Minimum open interest
+    'max_bid_ask_spread_pct': 10,  # Maximum bid-ask spread as % of price
+    'prefer_otm': True,            # Prefer out-of-the-money options
+    'target_distance_pct': 3.0,    # Target % above current price
+}
+
+# ============================================================================
+# CAPITAL SETTINGS
+# ============================================================================
+CAPITAL_SETTINGS = {
+    'available_cash': 27000.0,         # Total cash available for CSP strategies ($)
+    'max_cash_per_position': 27000.0,  # Maximum cash per single CSP position ($)
+    'reserve_cash': 5000.0,            # Cash to keep in reserve (not deployed) ($)
+    'max_positions': 3,                # Maximum number of simultaneous CSP positions
+    'auto_calculate_contracts': True,  # Auto-calculate max contracts based on cash
+}
+
+# ============================================================================
+# CASH SECURED PUT CRITERIA
+# ============================================================================
+CASH_SECURED_PUT_SETTINGS = {
+    'min_premium': 0.50,           # Minimum premium per share ($)
+    'min_annual_return': 15.0,     # Minimum annualized return (%) - RELAXED for longer options
+    'min_days': 25,                # Minimum days to expiration - UPDATED to avoid very short options
+    'max_days': 60,                # Maximum days to expiration - INCREASED to see longer dates
+    'min_prob_otm': 65.0,          # Minimum probability OTM (%) - RELAXED for longer options
+    'min_delta': None,             # Minimum delta (e.g., -0.4) - None to disable
+    'max_delta': -0.35,            # Maximum delta - RELAXED for longer options
+    'top_n': 20,                   # Number of top opportunities to display
+    'use_available_cash': True,    # Filter by available cash from CAPITAL_SETTINGS
+}
+
+# Advanced cash secured put filters
+CASH_SECURED_PUT_ADVANCED = {
+    'min_volume': 100,             # Minimum option volume - UPDATED for better liquidity
+    'min_open_interest': 100,      # Minimum open interest - UPDATED for better liquidity
+    'target_discount': 5.0,        # Target discount from current price (%)
+    'max_strike_pct': 1.0,         # Maximum strike as % of current (1.0 = at current price)
+    'quality_tickers_only': True,  # Only trade quality stocks - NEW
+    'avoid_itm': True,             # Avoid in-the-money puts - NEW
+}
+
+# Quality tickers for CSP strategy (only trade these if quality_tickers_only = True)
+CSP_QUALITY_TICKERS = [
+    'AAPL',   # Apple
+    'MSFT',   # Microsoft
+    'GOOGL',  # Google
+    'GOOG',   # Google (Class C)
+    'AMZN',   # Amazon
+    'META',   # Meta
+    'NVDA',   # NVIDIA
+    'AMD',    # AMD
+    'TSLA',   # Tesla
+    'QQQ',    # Nasdaq 100 ETF
+    'SPY',    # S&P 500 ETF
+    'IWM',    # Russell 2000 ETF
+    'DIA',    # Dow Jones ETF
+]
+
+# ============================================================================
+# WHEEL STRATEGY SETTINGS
+# ============================================================================
+WHEEL_SETTINGS = {
+    'target_entry_discount': 5.0,  # Desired discount to enter position (%)
+    'min_annual_return': 20.0,     # Minimum annualized return for puts
+    'max_days': 45,                # Maximum days to expiration
+    'prefer_quality': True,        # Prefer lower volatility, higher probability
+}
+
+# ============================================================================
+# DISPLAY SETTINGS
+# ============================================================================
+DISPLAY_SETTINGS = {
+    'table_format': 'grid',        # Options: 'grid', 'simple', 'fancy_grid', 'pipe'
+    'decimal_places': 2,           # Decimal places for prices
+    'show_greeks': True,           # Show delta, gamma, theta, vega
+    'show_volume': True,           # Show volume and open interest
+    'color_output': False,         # Colored terminal output (requires termcolor)
+}
+
+# ============================================================================
+# RISK MANAGEMENT
+# ============================================================================
+RISK_SETTINGS = {
+    'max_position_size': 5.0,      # Maximum % of portfolio per position
+    'max_concentration': 20.0,     # Maximum % in single ticker
+    'min_diversification': 5,      # Minimum number of different tickers
+    'max_leverage': 1.0,           # Maximum leverage (1.0 = no margin)
+}
+
+# ============================================================================
+# ALERT THRESHOLDS
+# ============================================================================
+ALERT_SETTINGS = {
+    'high_return_threshold': 30.0,     # Flag opportunities above this return
+    'high_premium_threshold': 5.0,     # Flag premiums above this amount
+    'high_iv_threshold': 0.5,          # Flag IV above 50%
+    'low_liquidity_threshold': 100,    # Warn if open interest below this
+}
+
+# ============================================================================
+# ANALYSIS PREFERENCES
+# ============================================================================
+ANALYSIS_PREFERENCES = {
+    'calculate_probabilities': True,   # Calculate OTM probabilities
+    'use_bid_for_selling': True,       # Use bid price for premium (conservative)
+    'use_ask_for_buying': True,        # Use ask price for buying (conservative)
+    'include_weekly_options': True,    # Include weekly expirations
+    'include_quarterly_options': True, # Include quarterly expirations
+}
+
+# ============================================================================
+# RECOMMENDATIONS SETTINGS
+# ============================================================================
+RECOMMENDATIONS_SETTINGS = {
+    'auto_save': True,                      # Automatically save all recommendations
+    'save_directory': 'data/recommendations',  # Where to save recommendations
+    'save_excel': True,                     # Also save combined Excel file
+    'keep_days': 30,                        # Auto-cleanup after this many days (0 = never)
+}
+
+# ============================================================================
+# EXPORT SETTINGS
+# ============================================================================
+EXPORT_SETTINGS = {
+    'auto_save': True,             # Automatically save results
+    'export_format': 'csv',        # Options: 'csv', 'excel', 'json'
+    'include_timestamp': True,     # Add timestamp to filenames
+    'save_summary': True,          # Save summary statistics
+}
+
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def get_aggressive_cc_settings():
+    """Return aggressive covered call settings (higher returns, more risk)"""
+    return {
+        'min_premium': 1.00,
+        'min_annual_return': 30.0,
+        'max_days': 30,
+        'max_delta': 0.5,
+        'top_n': 15,
+    }
+
+
+def get_conservative_cc_settings():
+    """Return conservative covered call settings (lower returns, less risk)"""
+    return {
+        'min_premium': 0.25,
+        'min_annual_return': 10.0,
+        'max_days': 60,
+        'max_delta': 0.2,
+        'top_n': 20,
+    }
+
+
+def get_aggressive_csp_settings():
+    """Return aggressive cash secured put settings"""
+    return {
+        'min_premium': 1.00,
+        'min_annual_return': 30.0,
+        'max_days': 30,
+        'min_delta': -0.5,
+        'top_n': 15,
+    }
+
+
+def get_conservative_csp_settings():
+    """Return conservative cash secured put settings"""
+    return {
+        'min_premium': 0.25,
+        'min_annual_return': 12.0,
+        'max_days': 60,
+        'max_delta': -0.2,
+        'top_n': 20,
+    }
+
+
+def get_monthly_income_settings():
+    """Settings optimized for monthly income generation"""
+    return {
+        'covered_call': {
+            'min_premium': 0.50,
+            'min_annual_return': 18.0,
+            'max_days': 35,
+            'max_delta': 0.3,
+        },
+        'cash_secured_put': {
+            'min_premium': 0.50,
+            'min_annual_return': 18.0,
+            'max_days': 35,
+            'max_delta': -0.3,
+        }
+    }
+
+
+# ============================================================================
+# PRESET WATCHLISTS
+# ============================================================================
+
+WATCHLIST_PRESETS = {
+    'tech': ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'AMD', 'TSLA'],
+    'dividend': ['JNJ', 'PG', 'KO', 'PEP', 'MCD', 'WMT', 'VZ', 'T'],
+    'etf': ['SPY', 'QQQ', 'IWM', 'DIA', 'VOO', 'VTI', 'EEM', 'GLD'],
+    'high_iv': ['TSLA', 'AMD', 'NVDA', 'GME', 'AMC', 'PLTR'],
+    'mega_cap': ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'BRK.B'],
+}
+
+
+def get_watchlist(preset='default'):
+    """
+    Get a preset watchlist
+
+    Args:
+        preset: 'default', 'tech', 'dividend', 'etf', 'high_iv', or 'mega_cap'
+
+    Returns:
+        List of tickers
+    """
+    if preset == 'default':
+        return WATCHLIST
+    else:
+        return WATCHLIST_PRESETS.get(preset, WATCHLIST)
+
+
+def get_deployable_cash():
+    """
+    Calculate cash available for deployment in CSP strategies
+
+    Returns:
+        Total cash available minus reserve
+    """
+    return CAPITAL_SETTINGS['available_cash'] - CAPITAL_SETTINGS['reserve_cash']
+
+
+def calculate_max_contracts(strike_price):
+    """
+    Calculate maximum number of contracts affordable at given strike
+
+    Args:
+        strike_price: Strike price of the put option
+
+    Returns:
+        Maximum number of contracts that can be sold
+    """
+    cash_per_contract = strike_price * 100  # Each contract = 100 shares
+    max_per_position = CAPITAL_SETTINGS['max_cash_per_position']
+    deployable = get_deployable_cash()
+
+    # Limit by position size
+    contracts_by_position = int(max_per_position / cash_per_contract)
+
+    # Limit by total deployable cash
+    contracts_by_total = int(deployable / cash_per_contract)
+
+    return min(contracts_by_position, contracts_by_total)
