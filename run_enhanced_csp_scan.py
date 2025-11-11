@@ -4,6 +4,9 @@ Uses technical and fundamental factors to improve probability estimates
 """
 import sys
 import os
+import argparse
+import webbrowser
+from datetime import datetime
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -11,12 +14,22 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.data.option_extractor import OptionDataExtractor
 from src.strategies.cash_secured_put import CashSecuredPutAnalyzer
 from src.analysis.enhanced_probability import EnhancedProbabilityAnalyzer
+from src.visualization.html_generator import HTMLDashboardGenerator
 import config
 from tabulate import tabulate
 
 
-def run_enhanced_scan():
-    """Run CSP scan with enhanced probability analysis"""
+def run_enhanced_scan(generate_html=False, open_browser=True, output_dir='output/dashboards'):
+    """Run CSP scan with enhanced probability analysis
+
+    Args:
+        generate_html: If True, generate HTML dashboard
+        open_browser: If True, automatically open dashboard in browser
+        output_dir: Directory to save HTML dashboard
+
+    Returns:
+        DataFrame with enhanced results
+    """
 
     print("\n" + "="*80)
     print("ENHANCED CSP SCANNER")
@@ -248,8 +261,112 @@ def run_enhanced_scan():
 
     print("\n" + "="*80 + "\n")
 
+    # Generate HTML dashboard if requested
+    if generate_html:
+        print("="*80)
+        print("GENERATING HTML DASHBOARD")
+        print("="*80)
+        print("\nCreating interactive HTML visualization...")
+
+        # Determine market status
+        market_status = 'CLOSED' if market_closed_count > 0 else 'OPEN'
+
+        # Prepare metadata
+        metadata = {
+            'scan_timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'market_status': market_status,
+            'tickers': tickers,
+            'scan_type': 'Enhanced CSP Scan',
+            'criteria': {
+                'min_days': settings['min_days'],
+                'max_days': settings['max_days'],
+                'min_prob_otm': settings['min_prob_otm'],
+                'min_premium': settings['min_premium'],
+                'min_annual_return': settings['min_annual_return']
+            }
+        }
+
+        # Initialize generator
+        generator = HTMLDashboardGenerator(config={
+            'theme': 'light',
+            'max_opportunities': 50,
+            'output_dir': output_dir
+        })
+
+        # Generate dashboard (only CSP results for now)
+        try:
+            output_path = generator.generate(
+                csp_results=results_enhanced,
+                cc_results=None,  # Not available in this scan
+                wheel_results=None,  # Not available in this scan
+                metadata=metadata
+            )
+
+            print(f"\n[SUCCESS] Dashboard generated successfully!")
+            print(f"  Location: {output_path}")
+            print(f"  Size: {os.path.getsize(output_path) / 1024:.1f} KB")
+
+            # Open in browser if requested
+            if open_browser:
+                print(f"\n  Opening dashboard in browser...")
+                webbrowser.open(f'file:///{os.path.abspath(output_path)}')
+                print(f"  [OK] Dashboard opened")
+
+            print("\n" + "="*80 + "\n")
+
+        except Exception as e:
+            print(f"\n[ERROR] Error generating dashboard: {e}")
+            print("  Continuing without HTML output...")
+            print("\n" + "="*80 + "\n")
+
     return results_enhanced
 
 
 if __name__ == "__main__":
-    results = run_enhanced_scan()
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(
+        description='Enhanced CSP Scanner with Technical + Fundamental Analysis',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Run scan with console output only
+  python run_enhanced_csp_scan.py
+
+  # Generate HTML dashboard and open in browser
+  python run_enhanced_csp_scan.py --html
+
+  # Generate HTML dashboard without opening browser
+  python run_enhanced_csp_scan.py --html --no-browser
+
+  # Generate HTML dashboard in custom directory
+  python run_enhanced_csp_scan.py --html --output-dir custom/path
+        """
+    )
+
+    parser.add_argument(
+        '--html',
+        action='store_true',
+        help='Generate interactive HTML dashboard'
+    )
+
+    parser.add_argument(
+        '--no-browser',
+        action='store_true',
+        help='Do not automatically open browser (only with --html)'
+    )
+
+    parser.add_argument(
+        '--output-dir',
+        type=str,
+        default='output/dashboards',
+        help='Output directory for HTML dashboard (default: output/dashboards)'
+    )
+
+    args = parser.parse_args()
+
+    # Run scan with specified options
+    results = run_enhanced_scan(
+        generate_html=args.html,
+        open_browser=not args.no_browser,
+        output_dir=args.output_dir
+    )
