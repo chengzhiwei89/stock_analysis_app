@@ -42,12 +42,12 @@ def run_enhanced_scan(generate_html=False, open_browser=True, output_dir='output
     prob_analyzer = EnhancedProbabilityAnalyzer()
 
     # Settings - More relaxed for demonstration
-    tickers = config.WATCHLIST[:5]  # Start with just 5 tickers for speed
+    tickers = config.WATCHLIST  # Scan all tickers
     settings = {
         'min_premium': 0.50,
         'min_annual_return': 12.0,
-        'min_days': 20,
-        'max_days': 65,
+        'min_days': 3,
+        'max_days': 50,
         'min_prob_otm': 60.0,  # Relaxed from 65%
         'max_delta': -0.40,     # Relaxed
         'min_volume': 50,       # Relaxed from 100

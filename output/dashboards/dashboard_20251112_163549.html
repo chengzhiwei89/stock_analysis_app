@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Options Trading Dashboard | 2025-11-12 16:35:49</title>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        /* Bootstrap 5 Core CSS - Minified Essential Components */
+        *,::after,::before{box-sizing:border-box}
+        body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#f8f9fa}
+        h1,h2,h3,h4,h5,h6{margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2}
+        h1{font-size:2.5rem}h2{font-size:2rem}h3{font-size:1.75rem}h4{font-size:1.5rem}
+        p{margin-top:0;margin-bottom:1rem}
+        a{color:#0d6efd;text-decoration:none}a:hover{color:#0a58ca;text-decoration:underline}
+        table{caption-side:bottom;border-collapse:collapse}
+        th{text-align:inherit;text-align:-webkit-match-parent}
+        .container{width:100%;padding-right:15px;padding-left:15px;margin-right:auto;margin-left:auto}
+        @media (min-width:1200px){.container{max-width:1140px}}
+        .row{display:flex;flex-wrap:wrap;margin-right:-15px;margin-left:-15px}
+        .col,.col-md-3,.col-md-4,.col-md-6,.col-md-12{position:relative;width:100%;padding-right:15px;padding-left:15px}
+        @media (min-width:768px){.col-md-3{flex:0 0 25%;max-width:25%}.col-md-4{flex:0 0 33.333333%;max-width:33.333333%}.col-md-6{flex:0 0 50%;max-width:50%}.col-md-12{flex:0 0 100%;max-width:100%}}
+
+        .card{position:relative;display:flex;flex-direction:column;min-width:0;word-wrap:break-word;background-color:#fff;background-clip:border-box;border:1px solid rgba(0,0,0,.125);border-radius:.25rem}
+        .card-body{flex:1 1 auto;padding:1.25rem}
+        .card-title{margin-bottom:.75rem;font-size:1.25rem;font-weight:500}
+
+        .table{width:100%;margin-bottom:1rem;color:#212529;border-collapse:collapse}
+        .table th,.table td{padding:.75rem;vertical-align:top;border-top:1px solid #dee2e6}
+        .table thead th{vertical-align:bottom;border-bottom:2px solid #dee2e6;background-color:#f8f9fa}
+        .table-striped tbody tr:nth-of-type(odd){background-color:rgba(0,0,0,.05)}
+        .table-hover tbody tr:hover{color:#212529;background-color:rgba(0,0,0,.075)}
+
+        .badge{display:inline-block;padding:.25em .4em;font-size:75%;font-weight:700;line-height:1;text-align:center;white-space:nowrap;vertical-align:baseline;border-radius:.25rem}
+        .badge-success{color:#fff;background-color:#198754}
+        .badge-warning{color:#000;background-color:#ffc107}
+        .badge-danger{color:#fff;background-color:#dc3545}
+        .badge-info{color:#000;background-color:#0dcaf0}
+        .badge-primary{color:#fff;background-color:#0d6efd}
+
+        .btn{display:inline-block;font-weight:400;text-align:center;vertical-align:middle;cursor:pointer;user-select:none;border:1px solid transparent;padding:.375rem .75rem;font-size:1rem;line-height:1.5;border-radius:.25rem;transition:color .15s ease-in-out,background-color .15s ease-in-out}
+        .btn-primary{color:#fff;background-color:#0d6efd;border-color:#0d6efd}
+        .btn-primary:hover{background-color:#0b5ed7;border-color:#0a58ca}
+        .btn-sm{padding:.25rem .5rem;font-size:.875rem;border-radius:.2rem}
+
+        .text-success{color:#198754!important}
+        .text-warning{color:#ffc107!important}
+        .text-danger{color:#dc3545!important}
+        .text-muted{color:#6c757d!important}
+        .text-primary{color:#0d6efd!important}
+        .text-center{text-align:center!important}
+        .text-right{text-align:right!important}
+
+        .mb-2{margin-bottom:.5rem!important}
+        .mb-3{margin-bottom:1rem!important}
+        .mb-4{margin-bottom:1.5rem!important}
+        .mt-2{margin-top:.5rem!important}
+        .mt-3{margin-top:1rem!important}
+        .mt-4{margin-top:1.5rem!important}
+        .mt-5{margin-top:3rem!important}
+        .p-3{padding:1rem!important}
+        .p-4{padding:1.5rem!important}
+
+        /* Custom Dashboard Styles */
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .summary-card h3 {
+            font-size: 2.5rem;
+            margin: 0.5rem 0;
+            font-weight: 700;
+        }
+
+        .summary-card p {
+            color: #6c757d;
+            margin: 0;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .strategy-section {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .strategy-section h2 {
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .market-status-open {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .market-status-closed {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 2rem 0;
+        }
+
+        /* Table enhancements */
+        .options-table {
+            font-size: 0.875rem;
+        }
+
+        .options-table th {
+            font-weight: 600;
+            background-color: #f1f3f5;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .options-table td {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+
+        .copy-btn {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #0b5ed7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 1rem 0;
+            }
+
+            .summary-card h3 {
+                font-size: 1.75rem;
+            }
+
+            .strategy-section {
+                padding: 1rem;
+            }
+
+            .options-table {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1 style="margin:0;">Options Trading Dashboard</h1>
+                    <p style="margin:0.5rem 0 0 0;opacity:0.9;">Enhanced Analysis with Technical, Fundamental & Sentiment Factors</p>
+                </div>
+                <div class="col-md-6 text-right">
+                    <div style="margin-top:1rem;">
+                        <span class="market-status-closed">MARKET CLOSED</span>
+                    </div>
+                    <p style="margin:0.5rem 0 0 0;opacity:0.9;">Generated: 2025-11-12 16:35:49</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="summary-card">
+                    <p>Total Opportunities</p>
+                    <h3 class="text-primary">6</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-card">
+                    <p>Average Return</p>
+                    <h3 class="text-success">14.4%</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-card">
+                    <p>Total Capital</p>
+                    <h3 class="text-info">$160,500.00</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-card">
+                    <p>Strategies Active</p>
+                    <h3 class="text-warning">3</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cash Secured Puts Section -->
+    <div class="container mt-5">
+        <div class="strategy-section">
+            <h2>Cash Secured Puts (CSP)</h2>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="text-muted mb-2">Opportunities Found</p>
+                            <h4 class="mb-0">6</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="text-muted mb-2">Avg Annual Return</p>
+                            <h4 class="mb-0 text-success">14.4%</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="text-muted mb-2">Total Capital Req.</p>
+                            <h4 class="mb-0 text-info">$160,500.00</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover options-table">
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Strike</th>
+                            <th>Exp Date</th>
+                            <th>Days</th>
+                            <th>Premium</th>
+                            <th>Annual %</th>
+                            <th>Prob OTM</th>
+                            <th>Enhanced</th>
+                            <th>Distance</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>GOOGL</strong></td>
+                            <td>$270.00</td>
+                            <td>2025-12-19</td>
+                            <td>36</td>
+                            <td>$4.00</td>
+                            <td class="text-warning">
+                                <strong>15.0%</strong>
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td>
+                                7.3%
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary copy-btn"
+                                        onclick="copyTradeDetails('GOOGL', '270.0', 'PUT', '2025-12-19')">
+                                    Copy
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>AAPL</strong></td>
+                            <td>$265.00</td>
+                            <td>2025-12-05</td>
+                            <td>22</td>
+                            <td>$2.36</td>
+                            <td class="text-danger">
+                                <strong>14.8%</strong>
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td>
+                                3.7%
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary copy-btn"
+                                        onclick="copyTradeDetails('AAPL', '265.0', 'PUT', '2025-12-05')">
+                                    Copy
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>AAPL</strong></td>
+                            <td>$265.00</td>
+                            <td>2025-12-19</td>
+                            <td>36</td>
+                            <td>$3.81</td>
+                            <td class="text-danger">
+                                <strong>14.6%</strong>
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td>
+                                3.7%
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary copy-btn"
+                                        onclick="copyTradeDetails('AAPL', '265.0', 'PUT', '2025-12-19')">
+                                    Copy
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>AAPL</strong></td>
+                            <td>$265.00</td>
+                            <td>2025-12-12</td>
+                            <td>29</td>
+                            <td>$3.05</td>
+                            <td class="text-danger">
+                                <strong>14.5%</strong>
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td>
+                                3.7%
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary copy-btn"
+                                        onclick="copyTradeDetails('AAPL', '265.0', 'PUT', '2025-12-12')">
+                                    Copy
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>GOOGL</strong></td>
+                            <td>$270.00</td>
+                            <td>2025-12-12</td>
+                            <td>29</td>
+                            <td>$3.09</td>
+                            <td class="text-danger">
+                                <strong>14.4%</strong>
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td>
+                                7.3%
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary copy-btn"
+                                        onclick="copyTradeDetails('GOOGL', '270.0', 'PUT', '2025-12-12')">
+                                    Copy
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>GOOGL</strong></td>
+                            <td>$270.00</td>
+                            <td>2025-12-05</td>
+                            <td>22</td>
+                            <td>$2.15</td>
+                            <td class="text-danger">
+                                <strong>13.2%</strong>
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td class="text-success">
+                                100.0%
+                            </td>
+                            <td>
+                                7.3%
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary copy-btn"
+                                        onclick="copyTradeDetails('GOOGL', '270.0', 'PUT', '2025-12-05')">
+                                    Copy
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- CSP Charts -->
+            <h3 class="mt-5 mb-3">Visual Analysis</h3>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Return Distribution</h5>
+                            <div class="chart-container">
+                                <canvas id="cspReturnChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Risk vs Reward</h5>
+                            <div class="chart-container">
+                                <canvas id="cspScatterChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Capital Requirements Pie Chart -->
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Capital Requirements by Ticker</h5>
+                            <div class="chart-container">
+                                <canvas id="cspCapitalChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Covered Calls Section -->
+    <div class="container">
+        <div class="strategy-section">
+            <h2>Covered Calls (CC)</h2>
+
+            <div class="empty-state">
+                <p>No Covered Call opportunities found matching criteria.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wheel Strategy Section -->
+    <div class="container">
+        <div class="strategy-section">
+            <h2>Wheel Strategy</h2>
+
+            <div class="empty-state">
+                <p>No Wheel Strategy candidates found matching criteria.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="text-muted mb-0">
+                        <strong>Options Trading Dashboard</strong><br>
+                        Generated by Options Analysis System v1.1
+                    </p>
+                </div>
+                <div class="col-md-6 text-right">
+                    <p class="text-muted mb-0">
+                        <small>
+                            <strong>Disclaimer:</strong> This analysis is for informational purposes only and does not constitute financial advice.
+                            Options trading involves risk and is not suitable for all investors.
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Copy trade details to clipboard
+        function copyTradeDetails(ticker, strike, type, expDate) {
+            const text = `${type} ${ticker} $${strike} ${expDate}`;
+
+            // Create temporary input
+            const temp = document.createElement('input');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+
+            // Show feedback
+            alert('Copied to clipboard: ' + text);
+        }
+
+        // Table sorting functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add sorting capability to tables
+            const tables = document.querySelectorAll('.options-table');
+
+            tables.forEach(table => {
+                const headers = table.querySelectorAll('th');
+
+                headers.forEach((header, index) => {
+                    if (index < headers.length - 1) { // Skip action column
+                        header.style.cursor = 'pointer';
+                        header.title = 'Click to sort';
+
+                        header.addEventListener('click', function() {
+                            sortTable(table, index);
+                        });
+                    }
+                });
+            });
+        });
+
+        function sortTable(table, column) {
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            // Toggle sort direction
+            const currentDir = table.dataset.sortDir || 'asc';
+            const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+            table.dataset.sortDir = newDir;
+
+            rows.sort((a, b) => {
+                let aVal = a.cells[column].textContent.trim();
+                let bVal = b.cells[column].textContent.trim();
+
+                // Try to parse as number
+                const aNum = parseFloat(aVal.replace(/[$%,]/g, ''));
+                const bNum = parseFloat(bVal.replace(/[$%,]/g, ''));
+
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return newDir === 'asc' ? aNum - bNum : bNum - aNum;
+                }
+
+                // String comparison
+                return newDir === 'asc'
+                    ? aVal.localeCompare(bVal)
+                    : bVal.localeCompare(aVal);
+            });
+
+            // Reorder rows
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Chart Rendering
+        document.addEventListener('DOMContentLoaded', function() {
+            // CSP Return Distribution Chart
+            const cspReturnCtx = document.getElementById('cspReturnChart');
+            if (cspReturnCtx) {
+                new Chart(cspReturnCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ["0-10%", "10-20%", "20-30%", "30%+"],
+                        datasets: [{
+                            label: 'Number of Opportunities',
+                            data: [0, 6, 0, 0],
+                            backgroundColor: [
+                                'rgba(220, 53, 69, 0.6)',   // Red: 0-10%
+                                'rgba(255, 193, 7, 0.6)',   // Yellow: 10-20%
+                                'rgba(132, 204, 22, 0.6)',  // Lime: 20-30%
+                                'rgba(16, 185, 129, 0.6)'   // Green: 30%+
+                            ],
+                            borderColor: [
+                                'rgba(220, 53, 69, 1)',
+                                'rgba(255, 193, 7, 1)',
+                                'rgba(132, 204, 22, 1)',
+                                'rgba(16, 185, 129, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.parsed.y + ' opportunities';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Count'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Annual Return Range'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // CSP Risk/Reward Scatter Plot
+            const cspScatterCtx = document.getElementById('cspScatterChart');
+            if (cspScatterCtx) {
+                const scatterData = [{"label": "GOOGL", "premium": 4.0, "strike": 270.0, "x": 15.020576131687244, "y": 99.99476525811389}, {"label": "AAPL", "premium": 2.36, "strike": 265.0, "x": 14.775300171526586, "y": 99.9999626608129}, {"label": "AAPL", "premium": 3.81, "strike": 265.0, "x": 14.577044025157232, "y": 99.9945705339818}, {"label": "AAPL", "premium": 3.05, "strike": 265.0, "x": 14.486011711125569, "y": 99.99918886839428}, {"label": "GOOGL", "premium": 3.09, "strike": 270.0, "x": 14.404214559386974, "y": 99.99922071330613}, {"label": "GOOGL", "premium": 2.15, "strike": 270.0, "x": 13.211279461279462, "y": 99.99996433744973}];
+
+                // Group by ticker for different colors
+                const tickerColors = {
+                    'GOOGL': 'rgba(234, 67, 53, 0.7)',
+                    'AAPL': 'rgba(52, 168, 83, 0.7)',
+                    'MSFT': 'rgba(251, 188, 5, 0.7)',
+                    'AMD': 'rgba(66, 133, 244, 0.7)',
+                    'NVDA': 'rgba(118, 75, 162, 0.7)',
+                    'TSLA': 'rgba(233, 30, 99, 0.7)',
+                    'SPY': 'rgba(0, 150, 136, 0.7)',
+                    'QQQ': 'rgba(255, 152, 0, 0.7)'
+                };
+
+                // Create dataset for each ticker
+                const tickerGroups = {};
+                scatterData.forEach(point => {
+                    if (!tickerGroups[point.label]) {
+                        tickerGroups[point.label] = [];
+                    }
+                    tickerGroups[point.label].push({
+                        x: point.x,
+                        y: point.y,
+                        r: Math.max(5, point.premium / 2) // Bubble size based on premium
+                    });
+                });
+
+                const datasets = Object.keys(tickerGroups).map(ticker => ({
+                    label: ticker,
+                    data: tickerGroups[ticker],
+                    backgroundColor: tickerColors[ticker] || 'rgba(128, 128, 128, 0.7)'
+                }));
+
+                new Chart(cspScatterCtx, {
+                    type: 'bubble',
+                    data: {
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            title: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.dataset.label || '';
+                                        return [
+                                            label,
+                                            'Return: ' + context.parsed.x.toFixed(1) + '%',
+                                            'Prob OTM: ' + context.parsed.y.toFixed(1) + '%'
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Annual Return (%)'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Probability OTM (%)'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // CSP Capital Requirements Pie Chart
+            const cspCapitalCtx = document.getElementById('cspCapitalChart');
+            if (cspCapitalCtx) {
+                const capitalData = {
+                    labels: ["GOOGL", "AAPL"],
+                    datasets: [{
+                        data: [81000.0, 79500.0],
+                        backgroundColor: [
+                            'rgba(234, 67, 53, 0.7)',    // Red - GOOGL
+                            'rgba(52, 168, 83, 0.7)',    // Green - AAPL
+                            'rgba(251, 188, 5, 0.7)',    // Yellow - MSFT
+                            'rgba(66, 133, 244, 0.7)',   // Blue - AMD
+                            'rgba(118, 75, 162, 0.7)',   // Purple - NVDA
+                            'rgba(233, 30, 99, 0.7)',    // Pink - TSLA
+                            'rgba(0, 150, 136, 0.7)',    // Teal - SPY
+                            'rgba(158, 158, 158, 0.7)'   // Gray - Others
+                        ],
+                        borderColor: [
+                            'rgba(234, 67, 53, 1)',
+                            'rgba(52, 168, 83, 1)',
+                            'rgba(251, 188, 5, 1)',
+                            'rgba(66, 133, 244, 1)',
+                            'rgba(118, 75, 162, 1)',
+                            'rgba(233, 30, 99, 1)',
+                            'rgba(0, 150, 136, 1)',
+                            'rgba(158, 158, 158, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                };
+
+                new Chart(cspCapitalCtx, {
+                    type: 'pie',
+                    data: capitalData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'right',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            title: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return [
+                                            label + ': $' + value.toLocaleString(),
+                                            percentage + '% of total capital'
+                                        ];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // CC Charts
+
+            // Wheel Charts
+        });
+    </script>
+</body>
+</html>
