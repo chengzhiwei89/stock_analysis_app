@@ -1,9 +1,9 @@
 """
 Test that min_distance_pct filter correctly excludes near-ATM options
 """
+from config import CASH_SECURED_PUT_SETTINGS, CASH_SECURED_PUT_ADVANCED, CAPITAL_SETTINGS, WATCHLIST
 from src.data.option_extractor import OptionDataExtractor
 from src.strategies.cash_secured_put import CashSecuredPutAnalyzer
-from config import CASH_SECURED_PUT_SETTINGS, CASH_SECURED_PUT_ADVANCED, CAPITAL_SETTINGS
 
 # Initialize
 extractor = OptionDataExtractor()
@@ -22,13 +22,18 @@ print(f"Testing {ticker}...")
 
 # Get current price
 stock_info = extractor.get_stock_info(ticker)
-current_price = stock_info.get('currentPrice', stock_info.get('regularMarketPrice', 0))
+current_price = stock_info.get('price', 0)
 print(f"Current Price: ${current_price:.2f}")
 print()
 
+# Fetch options data for the watchlist
+# The 'scan_opportunities' method expects 'options_df' as its first argument.
+# We need to fetch the data first and then pass it.
+options_df = extractor.fetch_and_store_options(WATCHLIST)
+
 # Run CSP scan
-results = csp_strategy.scan_opportunities(
-    tickers=[ticker],
+results = csp_strategy.get_top_opportunities(
+    options_df=options_df,
     min_annual_return=CASH_SECURED_PUT_SETTINGS['min_annual_return'],
     min_days=CASH_SECURED_PUT_SETTINGS['min_days'],
     max_days=CASH_SECURED_PUT_SETTINGS['max_days'],
