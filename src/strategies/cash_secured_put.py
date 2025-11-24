@@ -337,6 +337,9 @@ class CashSecuredPutAnalyzer:
         Returns:
             DataFrame comparing different expirations
         """
+        if options_df.empty:
+            return pd.DataFrame()
+
         ticker_data = options_df[
             (options_df['ticker'] == ticker) &
             (options_df['option_type'] == 'put')

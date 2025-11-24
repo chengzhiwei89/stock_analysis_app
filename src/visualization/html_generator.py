@@ -58,6 +58,7 @@ class HTMLDashboardGenerator:
         csp_results: Optional[pd.DataFrame] = None,
         cc_results: Optional[pd.DataFrame] = None,
         wheel_results: Optional[pd.DataFrame] = None,
+        leaps_results: Optional[pd.DataFrame] = None,
         metadata: Optional[Dict] = None,
         output_path: Optional[str] = None
     ) -> str:
@@ -68,6 +69,7 @@ class HTMLDashboardGenerator:
             csp_results: DataFrame with cash secured put opportunities
             cc_results: DataFrame with covered call opportunities
             wheel_results: DataFrame with wheel strategy opportunities
+            leaps_results: DataFrame with LEAPS call bet opportunities
             metadata: Dictionary with scan metadata (timestamp, market status, etc.)
             output_path: Optional custom output path
 
@@ -78,6 +80,7 @@ class HTMLDashboardGenerator:
         csp_results = csp_results if csp_results is not None else pd.DataFrame()
         cc_results = cc_results if cc_results is not None else pd.DataFrame()
         wheel_results = wheel_results if wheel_results is not None else pd.DataFrame()
+        leaps_results = leaps_results if leaps_results is not None else pd.DataFrame()
 
         metadata = metadata or {}
 
@@ -85,9 +88,10 @@ class HTMLDashboardGenerator:
         csp_results = csp_results.head(self.max_opportunities) if not csp_results.empty else csp_results
         cc_results = cc_results.head(self.max_opportunities) if not cc_results.empty else cc_results
         wheel_results = wheel_results.head(self.max_opportunities) if not wheel_results.empty else wheel_results
+        leaps_results = leaps_results.head(self.max_opportunities) if not leaps_results.empty else leaps_results
 
         # Calculate summary statistics
-        summary = self._calculate_summary_stats(csp_results, cc_results, wheel_results)
+        summary = self._calculate_summary_stats(csp_results, cc_results, wheel_results, leaps_results)
 
         # Prepare chart data
         csp_chart_data = self._prepare_csp_charts(csp_results)
@@ -98,12 +102,14 @@ class HTMLDashboardGenerator:
         csp_data = csp_results.to_dict('records') if not csp_results.empty else []
         cc_data = cc_results.to_dict('records') if not cc_results.empty else []
         wheel_data = wheel_results.to_dict('records') if not wheel_results.empty else []
+        leaps_data = leaps_results.to_dict('records') if not leaps_results.empty else []
 
         # Render template
         html = self._render_dashboard(
             csp_data=csp_data,
             cc_data=cc_data,
             wheel_data=wheel_data,
+            leaps_data=leaps_data,
             csp_charts=csp_chart_data,
             cc_charts=cc_chart_data,
             wheel_charts=wheel_chart_data,
@@ -125,15 +131,17 @@ class HTMLDashboardGenerator:
         self,
         csp_df: pd.DataFrame,
         cc_df: pd.DataFrame,
-        wheel_df: pd.DataFrame
+        wheel_df: pd.DataFrame,
+        leaps_df: pd.DataFrame
     ) -> Dict:
         """Calculate summary statistics across all strategies"""
 
         summary = {
-            'total_opportunities': len(csp_df) + len(cc_df) + len(wheel_df),
+            'total_opportunities': len(csp_df) + len(cc_df) + len(wheel_df) + len(leaps_df),
             'csp_count': len(csp_df),
             'cc_count': len(cc_df),
             'wheel_count': len(wheel_df),
+            'leaps_count': len(leaps_df),
         }
 
         # CSP stats
@@ -294,6 +302,7 @@ class HTMLDashboardGenerator:
         csp_data: List[Dict],
         cc_data: List[Dict],
         wheel_data: List[Dict],
+        leaps_data: List[Dict],
         csp_charts: Dict,
         cc_charts: Dict,
         wheel_charts: Dict,
@@ -309,6 +318,7 @@ class HTMLDashboardGenerator:
             csp_data=csp_data,
             cc_data=cc_data,
             wheel_data=wheel_data,
+            leaps_data=leaps_data,
             csp_charts=csp_charts,
             cc_charts=cc_charts,
             wheel_charts=wheel_charts,

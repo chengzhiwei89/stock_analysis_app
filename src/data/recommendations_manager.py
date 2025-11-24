@@ -235,8 +235,16 @@ class RecommendationsManager:
         # Find all metadata files
         meta_files = glob.glob(os.path.join(self.recommendations_dir, "*_meta.json"))
 
+        def get_sort_key(filepath):
+            # Extracts timestamp from filenames like 'csp_TICK_20230101_120000_meta.json'
+            filename = os.path.basename(filepath)
+            parts = filename.split('_')
+            if len(parts) >= 4:
+                return parts[-2] + parts[-1].split('.')[0]
+            return filename # Fallback
+
         recommendations = []
-        for meta_file in sorted(meta_files, reverse=True):
+        for meta_file in sorted(meta_files, key=get_sort_key, reverse=True):
             try:
                 with open(meta_file, 'r') as f:
                     metadata = json.load(f)
