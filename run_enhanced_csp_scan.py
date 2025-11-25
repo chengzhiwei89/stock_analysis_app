@@ -41,23 +41,27 @@ def run_enhanced_scan(generate_html=False, open_browser=True, output_dir='output
     csp_analyzer = CashSecuredPutAnalyzer()
     prob_analyzer = EnhancedProbabilityAnalyzer()
 
-    # Settings - More relaxed for demonstration
-    tickers = config.WATCHLIST  # Scan all tickers
+    # Settings - Load from config.py
+    tickers = config.WATCHLIST
     settings = {
-        'min_premium': 0.50,
-        'min_annual_return': 12.0,
-        'min_days': 3,
-        'max_days': 50,
-        'min_prob_otm': 60.0,  # Relaxed from 65%
-        'max_delta': -0.40,     # Relaxed
-        'min_volume': 50,       # Relaxed from 100
+        # Basic settings
+        'min_premium': config.CASH_SECURED_PUT_SETTINGS['min_premium'],
+        'min_annual_return': config.CASH_SECURED_PUT_SETTINGS['min_annual_return'],
+        'min_days': config.CASH_SECURED_PUT_SETTINGS['min_days'],
+        'max_days': config.CASH_SECURED_PUT_SETTINGS['max_days'],
+        # Advanced settings
+        'min_prob_otm': config.CASH_SECURED_PUT_ADVANCED['min_prob_otm'],
+        'min_delta': config.CASH_SECURED_PUT_ADVANCED['min_delta'],
+        'max_delta': config.CASH_SECURED_PUT_ADVANCED['max_delta'],
+        'min_volume': config.CASH_SECURED_PUT_ADVANCED['min_volume'],
     }
 
     print(f"\nScanning {len(tickers)} tickers: {', '.join(tickers)}")
     print(f"Criteria: {settings['min_days']}-{settings['max_days']} days, ")
     print(f"          {settings['min_prob_otm']}%+ prob OTM, ")
-    print(f"          ${settings['min_premium']}+ premium")
-    print(f"          {settings['min_volume']}+ volume (relaxed for demo)")
+    print(f"          ${settings['min_premium']}+ premium, ")
+    print(f"          {settings['min_volume']}+ volume, ")
+    print(f"          {settings['min_annual_return']}%+ annual return")
 
     print("\nNOTE: If market is closed, using lastPrice as fallback for bid=0")
     print("      During market hours, actual bid prices will be used")

@@ -118,38 +118,64 @@ COVERED_CALL_ADVANCED = {
 # CAPITAL SETTINGS
 # ============================================================================
 CAPITAL_SETTINGS = {
-    'available_cash': 27000.0,         # Total cash available for CSP strategies ($)
-    'max_cash_per_position': 27000.0,  # Maximum cash per single CSP position ($)
-    'reserve_cash': 5000.0,            # Cash to keep in reserve (not deployed) ($)
-    'max_positions': 3,                # Maximum number of simultaneous CSP positions
+    'available_cash': 38000.0,         # Total cash available for CSP strategies ($) - $24k + $27k SGD ≈ $38k USD
+    'max_cash_per_position': 30000.0,  # Maximum cash per single CSP position ($) - INCREASED to allow pricier stocks
+    'reserve_cash': 3000.0,            # Cash to keep in reserve (not deployed) ($) - emergency fund
+    'max_positions': 4,                # Maximum number of simultaneous CSP positions - diversification
     'auto_calculate_contracts': True,  # Auto-calculate max contracts based on cash
 }
 
 # ============================================================================
-# CASH SECURED PUT CRITERIA
+# CASH SECURED PUT CRITERIA - OPTIMIZED FOR 30-45 DTE + EARLY PROFIT TAKING
 # ============================================================================
+# Strategy: Sell 30-45 DTE puts, close at 50% profit (typically 10-20 days),
+#           force close at 21 DTE if target not hit, immediately roll to new position
+# Expected: 18-24 trades/year with lower stress than weeklies
+# ============================================================================
+
+# Basic Settings - Core filtering criteria
 CASH_SECURED_PUT_SETTINGS = {
-    'min_premium': 0.50,           # Minimum premium per share ($)
-    'min_annual_return': 15.0,     # Minimum annualized return (%) - RELAXED for longer options
-    'min_days': 25,                # Minimum days to expiration - UPDATED to avoid very short options
-    'max_days': 60,                # Maximum days to expiration - INCREASED to see longer dates
-    'min_prob_otm': 65.0,          # Minimum probability OTM (%) - RELAXED for longer options
-    'min_delta': None,             # Minimum delta (e.g., -0.4) - None to disable
-    'max_delta': -0.35,            # Maximum delta - RELAXED for longer options
+    'min_premium': 0.50,           # Minimum premium per share ($) - captures more opportunities
+    'min_annual_return': 12.0,     # Minimum annualized return (%) - realistic for 30-45 DTE
+    'min_days': 20,                # Minimum days to expiration - EXPANDED to capture more expirations
+    'max_days': 60,                # Maximum days to expiration - includes next monthly cycle
     'top_n': 20,                   # Number of top opportunities to display
     'use_available_cash': True,    # Filter by available cash from CAPITAL_SETTINGS
 }
 
-# Advanced cash secured put filters
+# Advanced Settings - Risk management and quality filters
 CASH_SECURED_PUT_ADVANCED = {
-    'min_volume': 100,             # Minimum option volume - UPDATED for better liquidity
-    'min_open_interest': 100,      # Minimum open interest - UPDATED for better liquidity
+    # Greeks-based filters - Balanced for safety + opportunity
+    'min_prob_otm': 65.0,          # Minimum probability OTM (%) - balanced (will improve as time passes)
+    'min_delta': None,             # Minimum delta (e.g., -0.4) - None to disable
+    'max_delta': -0.30,            # Maximum delta - conservative (further OTM)
+
+    # Liquidity filters - Important for early profit-taking strategy
+    'min_volume': 100,             # Minimum option volume - adequate liquidity
+    'min_open_interest': 100,      # Minimum open interest - adequate for exit
+
+    # Safety filters
     'target_discount': 5.0,        # Target discount from current price (%)
-    'max_strike_pct': 0.98,        # Maximum strike as % of current (0.98 = 2% minimum cushion)
-    'min_distance_pct': 2.0,       # SAFETY: Require strike at least 2% below current - PREVENTS near-ATM
-    'quality_tickers_only': True,  # Only trade quality stocks - NEW
-    'avoid_itm': True,             # Avoid in-the-money puts - NEW
+    'max_strike_pct': 0.98,        # Maximum strike as % of current (2% minimum cushion)
+    'min_distance_pct': 2.0,       # Strike must be at least 2% below current
+    'quality_tickers_only': False,  # Scan all tickers in watchlist (change to True to restrict to CSP_QUALITY_TICKERS)
+    'avoid_itm': True,             # Avoid in-the-money puts
 }
+
+# Early Profit-Taking Rules (Manual execution - track your trades!)
+EARLY_PROFIT_TAKING = {
+    'target_profit_pct': 50,       # Close when you've captured 50% of max profit
+    'aggressive_target_pct': 75,   # Close immediately if you hit 75% profit quickly
+    'force_close_dte': 21,         # Force close at 21 DTE if targets not hit
+    'min_hold_days': 7,            # Don't close before 7 days (let theta work)
+    'check_frequency': 'weekly',   # Check positions weekly (not daily)
+}
+
+# Example: Sell put for $2.00 premium (45 DTE)
+#  - After 10 days: Premium is now $1.00 → Close for 50% profit ($1.00 gain)
+#  - After 7 days: Premium is now $0.50 → Close for 75% profit ($1.50 gain)
+#  - At 21 DTE: Still $1.50 → Force close anyway (30% profit is fine)
+#  - Immediately open new 30-45 DTE position
 
 # Quality tickers for CSP strategy (only trade these if quality_tickers_only = True)
 CSP_QUALITY_TICKERS = [

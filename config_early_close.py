@@ -38,24 +38,31 @@ CAPITAL_SETTINGS = {
 # ============================================================================
 # CASH SECURED PUT CRITERIA - EARLY CLOSE STRATEGY
 # ============================================================================
+# Basic Settings - Core filtering criteria
 CASH_SECURED_PUT_SETTINGS = {
     'min_premium': 1.00,           # Higher premium (longer DTE = bigger premiums)
     'min_annual_return': 12.0,     # Lower threshold - you'll beat this with early close!
     'min_days': 40,                # Target 45-60 day sweet spot
     'max_days': 65,                # Include up to 65 days
-    'min_prob_otm': 65.0,          # Moderate - you'll close before it matters
-    'min_delta': None,
-    'max_delta': -0.35,            # Allow slightly higher delta (will improve as stock moves)
     'top_n': 20,
     'use_available_cash': True,
 }
 
-# Advanced filters - LIQUIDITY IS CRITICAL for early closing
+# Advanced Settings - Risk management and quality filters (LIQUIDITY IS CRITICAL for early closing)
 CASH_SECURED_PUT_ADVANCED = {
-    'min_volume': 500,             # MUST HAVE: Need volume to close with tight spreads
-    'min_open_interest': 500,      # MUST HAVE: Need OI to close easily
+    # Greeks-based filters
+    'min_prob_otm': 65.0,          # Moderate - you'll close before it matters
+    'min_delta': None,
+    'max_delta': -0.35,            # Allow slightly higher delta (will improve as stock moves)
+
+    # Liquidity filters - MUST HAVE for easy closing
+    'min_volume': 500,             # Need volume to close with tight spreads
+    'min_open_interest': 500,      # Need OI to close easily
+
+    # Safety filters
     'target_discount': 5.0,
     'max_strike_pct': 1.0,
+    'min_distance_pct': 2.0,       # Strike must be at least 2% below current
     'quality_tickers_only': True,
     'avoid_itm': True,
 }

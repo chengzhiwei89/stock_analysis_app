@@ -133,8 +133,8 @@ def quick_cash_secured_put_scan():
     advanced = config.CASH_SECURED_PUT_ADVANCED
 
     # Display additional filters
-    if settings.get('min_prob_otm'):
-        print(f"          Min {settings['min_prob_otm']}% probability OTM (safer trades)")
+    if advanced.get('min_prob_otm'):
+        print(f"          Min {advanced['min_prob_otm']}% probability OTM (safer trades)")
     if advanced.get('min_volume'):
         print(f"          Min {advanced['min_volume']} volume (better liquidity)")
     if advanced.get('quality_tickers_only'):
@@ -175,11 +175,11 @@ def quick_cash_secured_put_scan():
         min_annual_return=settings['min_annual_return'],
         min_days=settings.get('min_days', 0),
         max_days=settings['max_days'],
-        min_prob_otm=settings.get('min_prob_otm'),
+        min_prob_otm=advanced.get('min_prob_otm'),
         min_volume=advanced.get('min_volume'),
         quality_tickers=quality_tickers,
-        min_delta=settings.get('min_delta'),
-        max_delta=settings.get('max_delta'),
+        min_delta=advanced.get('min_delta'),
+        max_delta=advanced.get('max_delta'),
         top_n=settings['top_n'],
         available_cash=available_cash,
         max_cash_per_position=max_cash_per_position
