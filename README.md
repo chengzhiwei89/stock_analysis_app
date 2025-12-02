@@ -44,6 +44,15 @@ Expected: 18-24 trades/year with lower stress than weekly options.
 
 ## Recent Changes
 
+### 2025-12-02: HTML Dashboard Enhancements
+
+**Improvements:**
+- **Added stock price column**: CSP results table now displays current stock price for better context when evaluating strike prices
+- **Enhanced timestamp display**: Dashboard header now shows both data extraction time and dashboard generation time, helping users assess data freshness
+- **Better data age visibility**: Users can now clearly see how outdated the options data is before making trading decisions
+
+**Impact**: These UI improvements provide critical context for trading decisions by showing current stock prices alongside strike prices and making data freshness immediately visible.
+
 ### 2025-01-25: Configuration Restructure & Strategy Optimization
 
 **Major Changes:**

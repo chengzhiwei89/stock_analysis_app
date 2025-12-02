@@ -220,7 +220,8 @@
                         <span class="market-status-closed">MARKET CLOSED</span>
                         {% endif %}
                     </div>
-                    <p style="margin:0.5rem 0 0 0;opacity:0.9;">Generated: {{ generated_time }}</p>
+                    <p style="margin:0.5rem 0 0 0;opacity:0.9;">Data Extracted: {{ metadata.get('scan_timestamp', generated_time) }}</p>
+                    <p style="margin:0.25rem 0 0 0;opacity:0.7;font-size:0.875rem;">Dashboard Generated: {{ generated_time }}</p>
                 </div>
             </div>
         </div>
@@ -294,6 +295,7 @@
                     <thead>
                         <tr>
                             <th>Ticker</th>
+                            <th>Stock Price</th>
                             <th>Strike</th>
                             <th>Exp Date</th>
                             <th>Days</th>
@@ -309,6 +311,7 @@
                         {% for opp in csp_data %}
                         <tr>
                             <td><strong>{{ opp.ticker }}</strong></td>
+                            <td>{{ opp.current_stock_price|format_currency }}</td>
                             <td>{{ opp.strike|format_currency }}</td>
                             <td>{{ opp.expiration|format_date }}</td>
                             <td>{{ opp.days_to_expiration }}</td>
