@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(git commit:*)",
+      "Bash(python run_enhanced_csp_scan.py:*)",
+      "Bash(python -c:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

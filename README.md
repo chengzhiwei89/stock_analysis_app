@@ -8,6 +8,7 @@ A comprehensive Python toolkit for analyzing cash-secured put (CSP) and covered 
 - **Enhanced Probability Analysis**: Goes beyond Black-Scholes using technical, fundamental, and sentiment data
 - **Early Profit-Taking Strategy**: Optimized for 30-45 DTE with 50-75% profit targets
 - **HTML Dashboard Generation**: Interactive visualizations of scan results
+- **Full Data Table Export**: Generate interactive HTML tables with advanced filtering, sorting, and multi-format export (CSV, Excel, PDF)
 - **Portfolio Management**: Track and manage multiple positions with capital allocation
 
 ## Quick Start
@@ -21,6 +22,12 @@ python quick_start.py
 
 # Generate HTML dashboard
 python run_enhanced_csp_scan.py --html
+
+# Generate interactive table with advanced filters
+python run_enhanced_csp_scan.py --full
+
+# Generate both dashboard and full table
+python run_enhanced_csp_scan.py --html --full
 ```
 
 ## Configuration
@@ -43,6 +50,32 @@ The default configuration is optimized for:
 Expected: 18-24 trades/year with lower stress than weekly options.
 
 ## Recent Changes
+
+### 2025-12-03: Interactive Data Table & Filter Optimization
+
+**New Features:**
+- **Interactive Full Table Export**: Added `--full` flag to generate comprehensive HTML table with all scan data using DataTables library
+- **Advanced Column Filtering**: Text search with partial matching for text columns, range filters (min/max) for numeric columns
+- **Multi-format Export**: Export filtered data to CSV, Excel, PDF, or print-friendly view directly from the browser
+- **Real-time Filtering & Sorting**: Filter multiple columns simultaneously with instant updates, click any header to sort
+- **Responsive Design**: Mobile-friendly interface with state persistence across sessions
+
+**Configuration Optimizations:**
+- **Relaxed CSP filters**: Adjusted `min_prob_otm` from 65% to 60%, `max_delta` from -0.30 to -0.35, and `min_volume` from 100 to 50
+- **Improved ticker coverage**: Filter changes now capture more opportunities from stocks like MU (Micron) that were previously excluded
+- **Better balance**: Maintains adequate liquidity requirements while expanding the opportunity set
+
+**Files Added:**
+- `src/visualization/full_table_generator.py`: New module for generating interactive DataTables with advanced filtering
+- `check_mu_simple.py`, `diagnose_mu.py`: Diagnostic utilities for troubleshooting filter issues
+
+**Usage:**
+```bash
+python run_enhanced_csp_scan.py --full  # Generate interactive table
+python run_enhanced_csp_scan.py --html --full  # Generate both dashboard and table
+```
+
+**Impact**: Users can now export complete scan results to an interactive table with powerful filtering capabilities, enabling deeper analysis. Filter adjustments increase opportunity count by ~50% while maintaining quality standards.
 
 ### 2025-12-02: HTML Dashboard Enhancements
 

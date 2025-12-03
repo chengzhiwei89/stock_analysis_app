@@ -15,16 +15,18 @@ from src.data.option_extractor import OptionDataExtractor
 from src.strategies.cash_secured_put import CashSecuredPutAnalyzer
 from src.analysis.enhanced_probability import EnhancedProbabilityAnalyzer
 from src.visualization.html_generator import HTMLDashboardGenerator
+from src.visualization.full_table_generator import FullTableGenerator
 import config
 from tabulate import tabulate
 
 
-def run_enhanced_scan(generate_html=False, open_browser=True, output_dir='output/dashboards'):
+def run_enhanced_scan(generate_html=False, generate_full_table=False, open_browser=True, output_dir='output/dashboards'):
     """Run CSP scan with enhanced probability analysis
 
     Args:
         generate_html: If True, generate HTML dashboard
-        open_browser: If True, automatically open dashboard in browser
+        generate_full_table: If True, generate interactive table with all data
+        open_browser: If True, automatically open dashboard/table in browser
         output_dir: Directory to save HTML dashboard
 
     Returns:
@@ -323,6 +325,63 @@ def run_enhanced_scan(generate_html=False, open_browser=True, output_dir='output
             print("  Continuing without HTML output...")
             print("\n" + "="*80 + "\n")
 
+    # Generate full interactive table if requested
+    if generate_full_table:
+        print("="*80)
+        print("GENERATING FULL INTERACTIVE TABLE")
+        print("="*80)
+        print("\nCreating interactive table with advanced filters and sorting...")
+
+        # Prepare metadata
+        metadata = {
+            'scan_timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'market_status': 'CLOSED' if market_closed_count > 0 else 'OPEN',
+            'tickers': tickers,
+            'scan_type': 'Enhanced CSP Scan - Full Data Export',
+            'criteria': {
+                'min_days': settings['min_days'],
+                'max_days': settings['max_days'],
+                'min_prob_otm': settings['min_prob_otm'],
+                'min_premium': settings['min_premium'],
+                'min_annual_return': settings['min_annual_return']
+            }
+        }
+
+        # Initialize generator
+        full_table_generator = FullTableGenerator(output_dir='output/tables')
+
+        try:
+            table_path = full_table_generator.generate(
+                df=results_enhanced,
+                title="Enhanced CSP Scan - Complete Data",
+                metadata=metadata
+            )
+
+            print(f"\n[SUCCESS] Interactive table generated successfully!")
+            print(f"  Location: {table_path}")
+            print(f"  Size: {os.path.getsize(table_path) / 1024:.1f} KB")
+            print(f"  Total records: {len(results_enhanced)}")
+
+            # Open in browser if requested
+            if open_browser:
+                print(f"\n  Opening table in browser...")
+                webbrowser.open(f'file:///{os.path.abspath(table_path)}')
+                print(f"  [OK] Table opened")
+
+            print("\n  Table Features:")
+            print("    • Advanced column filtering (text search, range filters)")
+            print("    • Multi-column sorting")
+            print("    • Export to CSV, Excel, PDF")
+            print("    • Print-friendly view")
+            print("    • Responsive design")
+
+            print("\n" + "="*80 + "\n")
+
+        except Exception as e:
+            print(f"\n[ERROR] Error generating full table: {e}")
+            print("  Continuing without full table output...")
+            print("\n" + "="*80 + "\n")
+
     return results_enhanced
 
 
@@ -338,6 +397,12 @@ Examples:
 
   # Generate HTML dashboard and open in browser
   python run_enhanced_csp_scan.py --html
+
+  # Generate interactive table with all data and advanced filters
+  python run_enhanced_csp_scan.py --full
+
+  # Generate both HTML dashboard and full table
+  python run_enhanced_csp_scan.py --html --full
 
   # Generate HTML dashboard without opening browser
   python run_enhanced_csp_scan.py --html --no-browser
@@ -366,11 +431,18 @@ Examples:
         help='Output directory for HTML dashboard (default: output/dashboards)'
     )
 
+    parser.add_argument(
+        '--full',
+        action='store_true',
+        help='Generate interactive table with all extracted data, advanced filters, and sorting'
+    )
+
     args = parser.parse_args()
 
     # Run scan with specified options
     results = run_enhanced_scan(
         generate_html=args.html,
+        generate_full_table=args.full,
         open_browser=not args.no_browser,
         output_dir=args.output_dir
     )

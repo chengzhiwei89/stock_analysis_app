@@ -146,12 +146,12 @@ CASH_SECURED_PUT_SETTINGS = {
 # Advanced Settings - Risk management and quality filters
 CASH_SECURED_PUT_ADVANCED = {
     # Greeks-based filters - Balanced for safety + opportunity
-    'min_prob_otm': 65.0,          # Minimum probability OTM (%) - balanced (will improve as time passes)
+    'min_prob_otm': 60.0,          # Minimum probability OTM (%) - relaxed to include more opportunities
     'min_delta': None,             # Minimum delta (e.g., -0.4) - None to disable
-    'max_delta': -0.30,            # Maximum delta - conservative (further OTM)
+    'max_delta': -0.35,            # Maximum delta - slightly relaxed to capture MU and similar stocks
 
     # Liquidity filters - Important for early profit-taking strategy
-    'min_volume': 100,             # Minimum option volume - adequate liquidity
+    'min_volume': 50,              # Minimum option volume - relaxed for more opportunities
     'min_open_interest': 100,      # Minimum open interest - adequate for exit
 
     # Safety filters
