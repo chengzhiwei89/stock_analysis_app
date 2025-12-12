@@ -236,6 +236,48 @@ ALERT_SETTINGS = {
 }
 
 # ============================================================================
+# POSITION ANALYSIS & MONITORING SETTINGS
+# ============================================================================
+# Settings for analyzing and managing existing option positions
+# Used by run_position_analysis.py and position management tools
+# ============================================================================
+POSITION_ANALYSIS_SETTINGS = {
+    # Profit-taking rules (aligned with 50% profit target + 21 DTE force close strategy)
+    'profit_taking_rules': {
+        'aggressive_target_pct': 75,   # Close immediately at this profit % (excellent outcome)
+        'standard_target_pct': 50,     # Standard profit target (close by this)
+        'conservative_target_pct': 30,  # Minimum acceptable profit before considering close
+        'stop_loss_pct': -50,          # Close if loss exceeds this % (risk management)
+        'force_close_dte': 21,         # Force close at this DTE regardless of P&L
+        'min_hold_days': 7,            # Don't close before holding this many days
+    },
+
+    # Risk thresholds for flagging positions
+    'risk_thresholds': {
+        'min_prob_otm_warning': 45,    # Warn if probability OTM drops below this
+        'max_iv_change_pct': 30,       # Flag if IV changes more than this %
+        'earnings_warning_days': 14,   # Warn if earnings within this many days
+        'technical_score_drop': 15,    # Flag if technical score drops by this much
+    },
+
+    # Rolling criteria (when to roll vs close)
+    'roll_criteria': {
+        'min_net_credit': 0.25,        # Minimum net credit to consider roll ($)
+        'min_annual_return_improvement': 5.0,  # Roll must improve annual return by this %
+        'prefer_similar_dte': True,    # Prefer similar DTE when rolling
+        'max_roll_cost': 1.00,         # Maximum debit acceptable for rolls ($)
+    },
+
+    # Urgency weighting (for prioritizing recommendations)
+    'urgency_weights': {
+        'days_remaining_weight': 0.30,     # Time pressure factor
+        'pnl_achievement_weight': 0.25,    # Profit target achievement
+        'risk_change_weight': 0.25,        # Risk deterioration
+        'event_risk_weight': 0.20,         # Upcoming events (earnings)
+    },
+}
+
+# ============================================================================
 # ANALYSIS PREFERENCES
 # ============================================================================
 ANALYSIS_PREFERENCES = {

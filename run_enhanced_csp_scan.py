@@ -16,6 +16,7 @@ from src.strategies.cash_secured_put import CashSecuredPutAnalyzer
 from src.analysis.enhanced_probability import EnhancedProbabilityAnalyzer
 from src.visualization.html_generator import HTMLDashboardGenerator
 from src.visualization.full_table_generator import FullTableGenerator
+from src.utils.market_hours import is_market_open, get_market_status
 import config
 from tabulate import tabulate
 
@@ -120,14 +121,26 @@ def run_enhanced_scan(generate_html=False, generate_full_table=False, open_brows
 
     print("Enhanced analysis complete!")
 
-    # Check market status
-    market_closed_count = (results_enhanced['price_source'] == 'lastPrice').sum()
-    if market_closed_count > 0:
-        print(f"\nMARKET STATUS: Closed (using lastPrice for {market_closed_count} options)")
-        print("NOTE: Prices shown are estimates based on last traded price")
-        print("      Actual bid prices may differ when market opens")
-    else:
-        print(f"\nMARKET STATUS: Open (using live bid prices)")
+    # Check market status using actual market hours
+    market_status, market_description = get_market_status()
+    is_open = is_market_open()
+
+    # Count options using fallback pricing
+    fallback_price_count = (results_enhanced['price_source'] == 'lastPrice').sum()
+
+    print(f"\nMARKET STATUS: {market_status}")
+    print(f"  {market_description}")
+
+    if not is_open and fallback_price_count > 0:
+        print(f"\n  NOTE: Using lastPrice fallback for {fallback_price_count} options")
+        print(f"        Prices shown are estimates based on last traded price")
+        print(f"        Actual bid prices will differ when market opens")
+    elif not is_open:
+        print(f"\n  NOTE: Market is closed - option prices may be stale")
+        print(f"        Bid prices shown are from last market session")
+    elif is_open and fallback_price_count > 0:
+        print(f"\n  WARNING: {fallback_price_count} options have no live bid (using lastPrice)")
+        print(f"           This may indicate low liquidity")
 
     # Display comparison
     print("\n" + "="*80)
@@ -274,10 +287,7 @@ def run_enhanced_scan(generate_html=False, generate_full_table=False, open_brows
         print("="*80)
         print("\nCreating interactive HTML visualization...")
 
-        # Determine market status
-        market_status = 'CLOSED' if market_closed_count > 0 else 'OPEN'
-
-        # Prepare metadata
+        # Prepare metadata (market_status already determined above)
         metadata = {
             'scan_timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'market_status': market_status,
@@ -332,10 +342,10 @@ def run_enhanced_scan(generate_html=False, generate_full_table=False, open_brows
         print("="*80)
         print("\nCreating interactive table with advanced filters and sorting...")
 
-        # Prepare metadata
+        # Prepare metadata (market_status already determined above)
         metadata = {
             'scan_timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'market_status': 'CLOSED' if market_closed_count > 0 else 'OPEN',
+            'market_status': market_status,
             'tickers': tickers,
             'scan_type': 'Enhanced CSP Scan - Full Data Export',
             'criteria': {
