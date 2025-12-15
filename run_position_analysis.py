@@ -17,6 +17,7 @@ from src.portfolio.capital_calculator import CapitalCalculator
 from src.portfolio.position_analyzer import PositionAnalyzer, PositionRecommendation
 from src.strategies.rolling_optimizer import RollingOpportunityFinder
 from src.strategies.cash_secured_put import CashSecuredPutAnalyzer
+from src.strategies.covered_call import CoveredCallAnalyzer
 from src.data.option_extractor import OptionDataExtractor
 from src.utils.market_hours import get_market_status
 import config
@@ -25,7 +26,8 @@ import config
 def run_position_analysis(
     generate_html: bool = False,
     open_browser: bool = True,
-    scan_new_opportunities: bool = True,
+    scan_csp: bool = False,
+    scan_cc: bool = False,
     output_dir: str = 'output/position_analysis'
 ) -> List[PositionRecommendation]:
     """
@@ -34,7 +36,8 @@ def run_position_analysis(
     Args:
         generate_html: Generate HTML dashboard
         open_browser: Automatically open browser
-        scan_new_opportunities: Scan for new opportunities with available capital
+        scan_csp: Scan for new Cash Secured Put opportunities
+        scan_cc: Scan for new Covered Call opportunities
         output_dir: Output directory for reports
 
     Returns:
@@ -116,67 +119,109 @@ def run_position_analysis(
     print(f"\nAnalysis complete! {len(recommendations)} position(s) analyzed.")
 
     # ========================================================================
-    # STEP 3: SCAN NEW OPPORTUNITIES (if capital available)
+    # STEP 3: SCAN NEW OPPORTUNITIES (optional)
     # ========================================================================
-    new_opportunities = None
+    csp_opportunities = None
+    cc_opportunities = None
 
-    if scan_new_opportunities and capital_info['remaining_for_new'] > 0:
+    if scan_csp or scan_cc:
         print("\n" + "="*80)
         print("[3/4] SCANNING NEW OPPORTUNITIES")
         print("="*80)
 
         print(f"\nAvailable capital for new positions: ${capital_info['remaining_for_new']:,.0f}")
         print(f"Position slots available: {capital_info['positions_available']}")
-        print("\nScanning for CSP opportunities with available capital...")
 
-        try:
-            option_extractor = OptionDataExtractor()
-            csp_analyzer = CashSecuredPutAnalyzer()
+        option_extractor = OptionDataExtractor()
 
-            # Fetch options data for watchlist
-            tickers = config.WATCHLIST[:10]  # Limit to first 10 for speed
-            print(f"Fetching data for {len(tickers)} tickers...")
+        # Scan for Cash Secured Put opportunities
+        if scan_csp and capital_info['remaining_for_new'] > 0:
+            print("\n" + "-"*80)
+            print("Scanning for CASH SECURED PUT opportunities...")
+            print("-"*80)
 
-            options_data = option_extractor.fetch_and_store_options(
-                tickers,
-                num_expirations=3  # Reduced for faster scanning
-            )
+            try:
+                csp_analyzer = CashSecuredPutAnalyzer()
 
-            if not options_data.empty:
-                # Run CSP analysis with capital constraint
-                new_opportunities = csp_analyzer.get_top_opportunities(
-                    options_data,
-                    min_premium=config.CASH_SECURED_PUT_SETTINGS['min_premium'],
-                    min_annual_return=config.CASH_SECURED_PUT_SETTINGS['min_annual_return'],
-                    min_days=config.CASH_SECURED_PUT_SETTINGS['min_days'],
-                    max_days=config.CASH_SECURED_PUT_SETTINGS['max_days'],
-                    min_prob_otm=config.CASH_SECURED_PUT_ADVANCED.get('min_prob_otm'),
-                    min_volume=config.CASH_SECURED_PUT_ADVANCED.get('min_volume'),
-                    top_n=10,
-                    available_cash=capital_info['remaining_for_new'],
-                    max_cash_per_position=capital_info['max_per_position']
+                # Fetch options data for watchlist
+                tickers = config.WATCHLIST[:10]  # Limit to first 10 for speed
+                print(f"Fetching data for {len(tickers)} tickers...")
+
+                options_data = option_extractor.fetch_and_store_options(
+                    tickers,
+                    num_expirations=3  # Reduced for faster scanning
                 )
 
-                print(f"Found {len(new_opportunities)} new opportunities")
-            else:
-                print("No options data available")
+                if not options_data.empty:
+                    # Run CSP analysis with capital constraint
+                    csp_opportunities = csp_analyzer.get_top_opportunities(
+                        options_data,
+                        min_premium=config.CASH_SECURED_PUT_SETTINGS['min_premium'],
+                        min_annual_return=config.CASH_SECURED_PUT_SETTINGS['min_annual_return'],
+                        min_days=config.CASH_SECURED_PUT_SETTINGS['min_days'],
+                        max_days=config.CASH_SECURED_PUT_SETTINGS['max_days'],
+                        min_prob_otm=config.CASH_SECURED_PUT_ADVANCED.get('min_prob_otm'),
+                        min_volume=config.CASH_SECURED_PUT_ADVANCED.get('min_volume'),
+                        top_n=10,
+                        available_cash=capital_info['remaining_for_new'],
+                        max_cash_per_position=capital_info['max_per_position']
+                    )
 
-        except Exception as e:
-            print(f"Error scanning new opportunities: {e}")
-            new_opportunities = None
+                    print(f"✓ Found {len(csp_opportunities)} CSP opportunities")
+                else:
+                    print("✗ No options data available for CSP")
+
+            except Exception as e:
+                print(f"✗ Error scanning CSP opportunities: {e}")
+                csp_opportunities = None
+
+        # Scan for Covered Call opportunities
+        if scan_cc:
+            print("\n" + "-"*80)
+            print("Scanning for COVERED CALL opportunities...")
+            print("-"*80)
+
+            try:
+                cc_analyzer = CoveredCallAnalyzer()
+
+                # Get stocks available for covered calls
+                cc_stocks = portfolio.get_covered_call_opportunities()
+
+                if not cc_stocks.empty:
+                    tickers = cc_stocks['ticker'].unique().tolist()
+                    print(f"Fetching data for {len(tickers)} stock(s) in portfolio...")
+
+                    options_data = option_extractor.fetch_and_store_options(
+                        tickers,
+                        num_expirations=3
+                    )
+
+                    if not options_data.empty:
+                        # Run CC analysis
+                        cc_opportunities = cc_analyzer.get_top_opportunities(
+                            options_data,
+                            min_premium=config.COVERED_CALL_SETTINGS['min_premium'],
+                            min_annual_return=config.COVERED_CALL_SETTINGS['min_annual_return'],
+                            max_days=config.COVERED_CALL_SETTINGS['max_days'],
+                            top_n=10
+                        )
+
+                        print(f"✓ Found {len(cc_opportunities)} CC opportunities")
+                    else:
+                        print("✗ No options data available for CC")
+                else:
+                    print("✗ No stocks with 100+ shares in portfolio")
+                    print("   Add stock positions using: python add_stock_position.py")
+
+            except Exception as e:
+                print(f"✗ Error scanning CC opportunities: {e}")
+                cc_opportunities = None
 
     else:
-        if not scan_new_opportunities:
-            print("\n" + "="*80)
-            print("[3/4] SKIPPING NEW OPPORTUNITIES SCAN")
-            print("="*80)
-            print("\n(Use --scan-new flag to include new opportunity scanning)")
-        else:
-            print("\n" + "="*80)
-            print("[3/4] NO CAPITAL AVAILABLE FOR NEW POSITIONS")
-            print("="*80)
-            print(f"\nAll capital deployed (${deployed_info['total_deployed']:,.0f})")
-            print("Close existing positions to free capital for new opportunities")
+        print("\n" + "="*80)
+        print("[3/4] SKIPPING NEW OPPORTUNITIES SCAN")
+        print("="*80)
+        print("\n(Use --scan-csp or --scan-cc flags to scan for new opportunities)")
 
     # ========================================================================
     # STEP 4: GENERATE REPORTS
@@ -186,7 +231,7 @@ def run_position_analysis(
     print("="*80)
 
     # Console output
-    print_position_recommendations(recommendations, new_opportunities, capital_info)
+    print_position_recommendations(recommendations, csp_opportunities, cc_opportunities, capital_info)
 
     # HTML dashboard (optional)
     if generate_html:
@@ -209,6 +254,18 @@ def run_position_analysis(
                 'open_positions': len(recommendations),
                 'position_slots_available': capital_info['positions_available']
             }
+
+            # Combine opportunities for HTML dashboard
+            new_opportunities = None
+            if csp_opportunities is not None or cc_opportunities is not None:
+                import pandas as pd
+                dfs = []
+                if csp_opportunities is not None and not csp_opportunities.empty:
+                    dfs.append(csp_opportunities)
+                if cc_opportunities is not None and not cc_opportunities.empty:
+                    dfs.append(cc_opportunities)
+                if dfs:
+                    new_opportunities = pd.concat(dfs, ignore_index=True)
 
             output_path = generator.generate(
                 recommendations=recommendations,
@@ -239,7 +296,8 @@ def run_position_analysis(
 
 def print_position_recommendations(
     recommendations: List[PositionRecommendation],
-    new_opportunities,
+    csp_opportunities,
+    cc_opportunities,
     capital_info: Dict
 ):
     """Print formatted position recommendations to console"""
@@ -299,15 +357,15 @@ def print_position_recommendations(
             print(f"   P&L: ${rec.unrealized_pnl:.2f} ({rec.unrealized_pnl_pct:.1f}%) | Health: {rec.health_score:.0f}/100")
             print(f"   {rec.primary_reason}")
 
-    # New opportunities summary
-    if new_opportunities is not None and not new_opportunities.empty:
+    # CSP opportunities summary
+    if csp_opportunities is not None and not csp_opportunities.empty:
         print("\n" + "="*80)
-        print(f"NEW OPPORTUNITIES (${capital_info['remaining_for_new']:,.0f} available)")
+        print(f"CASH SECURED PUT OPPORTUNITIES (${capital_info['remaining_for_new']:,.0f} available)")
         print("="*80)
 
-        print(f"\nTop {min(5, len(new_opportunities))} opportunities with available capital:\n")
+        print(f"\nTop {min(5, len(csp_opportunities))} CSP opportunities:\n")
 
-        for i, (_, opp) in enumerate(new_opportunities.head(5).iterrows(), 1):
+        for i, (_, opp) in enumerate(csp_opportunities.head(5).iterrows(), 1):
             affordable = opp['total_capital_required'] <= capital_info['remaining_for_new']
             status = "✓ AFFORDABLE" if affordable else f"✗ Need ${opp['total_capital_required'] - capital_info['remaining_for_new']:,.0f} more"
 
@@ -315,6 +373,20 @@ def print_position_recommendations(
             print(f"   Annual Return: {opp['annual_return']:.1f}% | Prob OTM: {opp['prob_otm']:.0f}%")
             print(f"   Premium: ${opp['premium_received']:.2f} | Capital: ${opp['total_capital_required']:,.0f}")
             print(f"   {status}\n")
+
+    # Covered Call opportunities summary
+    if cc_opportunities is not None and not cc_opportunities.empty:
+        print("\n" + "="*80)
+        print(f"COVERED CALL OPPORTUNITIES")
+        print("="*80)
+
+        print(f"\nTop {min(5, len(cc_opportunities))} CC opportunities from your portfolio:\n")
+
+        for i, (_, opp) in enumerate(cc_opportunities.head(5).iterrows(), 1):
+            print(f"{i}. {opp['ticker']} ${opp['strike']:.0f} CALL (exp {opp['expiration']}, {opp['days_to_expiration']} days)")
+            print(f"   Annual Return: {opp['annual_return']:.1f}% | Prob OTM: {opp.get('prob_otm', 0):.0f}%")
+            print(f"   Premium: ${opp['premium_received']:.2f} | Max Profit: {opp.get('max_profit_pct', 0):.1f}%")
+            print(f"   Distance: {opp['distance_pct']:.1f}% OTM\n")
 
     print("\n" + "="*80)
     print("ANALYSIS COMPLETE")
@@ -328,14 +400,23 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Basic analysis (console output only)
+  # Basic analysis - analyze current positions only (default)
   python run_position_analysis.py
+
+  # Analyze positions + scan for new CSP opportunities
+  python run_position_analysis.py --scan-csp
+
+  # Analyze positions + scan for new Covered Call opportunities
+  python run_position_analysis.py --scan-cc
+
+  # Scan for both CSP and CC opportunities
+  python run_position_analysis.py --scan-csp --scan-cc
 
   # Generate HTML dashboard
   python run_position_analysis.py --html
 
-  # Skip new opportunity scanning
-  python run_position_analysis.py --no-scan-new
+  # Full analysis with HTML dashboard
+  python run_position_analysis.py --scan-csp --scan-cc --html
 
   # Generate HTML without opening browser
   python run_position_analysis.py --html --no-browser
@@ -358,9 +439,15 @@ Examples:
     )
 
     parser.add_argument(
-        '--no-scan-new',
+        '--scan-csp',
         action='store_true',
-        help='Skip scanning for new opportunities'
+        help='Scan for new Cash Secured Put opportunities'
+    )
+
+    parser.add_argument(
+        '--scan-cc',
+        action='store_true',
+        help='Scan for new Covered Call opportunities from portfolio stocks'
     )
 
     parser.add_argument(
@@ -376,6 +463,7 @@ Examples:
     recommendations = run_position_analysis(
         generate_html=args.html,
         open_browser=not args.no_browser,
-        scan_new_opportunities=not args.no_scan_new,
+        scan_csp=args.scan_csp,
+        scan_cc=args.scan_cc,
         output_dir=args.output_dir
     )
