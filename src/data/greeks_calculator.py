@@ -103,13 +103,21 @@ class GreeksCalculator:
         Returns:
             Probability as percentage
         """
-        if days <= 0 or implied_vol <= 0:
+        if days <= 0:
             return 0.0
 
         try:
+            # Sanity check on IV - yfinance often returns bad IV data for short-dated options
+            # If IV is unreasonably low (< 10%), use a reasonable default
+            effective_iv = implied_vol
+            if implied_vol < 0.10:  # Less than 10% IV is unrealistic for most stocks
+                # Use a moderate default IV of 45% for tech stocks
+                # This is a reasonable estimate when data is missing/bad
+                effective_iv = 0.45
+
             time_to_expiration = days / 365.0
-            d1 = (np.log(current_price / strike) + (0.5 * implied_vol ** 2) * time_to_expiration) / \
-                 (implied_vol * np.sqrt(time_to_expiration))
+            d1 = (np.log(current_price / strike) + (0.5 * effective_iv ** 2) * time_to_expiration) / \
+                 (effective_iv * np.sqrt(time_to_expiration))
 
             if option_type.lower() == 'call':
                 # Probability of being below strike at expiration

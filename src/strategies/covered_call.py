@@ -46,11 +46,32 @@ class CoveredCallAnalyzer:
         # Enrich with calculated metrics
         calls = self.greeks_calc.enrich_option_data(calls)
 
+        # Filter for realistic strikes (reject extremely OTM strikes)
+        # For covered calls, typically want strikes within 0-50% above current price
+        # Anything more than 100% OTM is unrealistic for normal covered calls
+        current_price = calls['current_stock_price'].iloc[0] if len(calls) > 0 else 0
+        if current_price > 0:
+            max_strike = current_price * 1.5  # Max 50% OTM
+            calls = calls[
+                (calls['strike'] >= current_price * 0.95) &  # At least 5% ITM
+                (calls['strike'] <= max_strike)
+            ].copy()
+
+        if calls.empty:
+            return pd.DataFrame()
+
+        # Use lastPrice as fallback when bid is not available (market closed)
+        calls['price_source'] = calls['bid'].apply(lambda x: 'bid' if x > 0 else 'lastPrice')
+        calls['effective_price'] = calls.apply(
+            lambda row: row['bid'] if row['bid'] > 0 else row['lastPrice'],
+            axis=1
+        )
+
         # Filter by criteria
         filtered = calls[
             (calls['days_to_expiration'] <= max_days) &
             (calls['days_to_expiration'] > 0) &
-            (calls['bid'] >= min_premium)  # Use bid since we're selling
+            (calls['effective_price'] >= min_premium)  # Use effective price
         ].copy()
 
         if filtered.empty:
@@ -60,8 +81,8 @@ class CoveredCallAnalyzer:
         # Capital required = stock price (we own the stock)
         filtered['capital_required'] = filtered['current_stock_price']
 
-        # Premium received = bid price (we sell at bid)
-        filtered['premium_received'] = filtered['bid']
+        # Premium received = effective price (bid or lastPrice)
+        filtered['premium_received'] = filtered['effective_price']
 
         # Total return if called away
         filtered['max_profit'] = (filtered['strike'] - filtered['current_stock_price']) + filtered['premium_received']

@@ -80,43 +80,49 @@ def run_position_analysis(
     print("="*80)
 
     open_positions = portfolio.get_options_dataframe(status='open')
+    recommendations = []
 
     if open_positions.empty:
-        print("\nNo open positions to analyze.")
-        print("\nTo add positions, use:")
-        print("  from src.portfolio.portfolio_manager import PortfolioManager")
-        print("  portfolio = PortfolioManager()")
-        print("  portfolio.add_option_position(...)")
-        return []
+        print("\nNo open option positions to analyze.")
 
-    print(f"\nAnalyzing {len(open_positions)} open position(s)...")
-    print("(Fetching current market data and running analysis...)\n")
+        # If no scanning requested, exit early
+        if not scan_csp and not scan_cc:
+            print("\nTo add option positions, use:")
+            print("  python add_options_position.py")
+            print("\nOr scan for opportunities:")
+            print("  python run_position_analysis.py --scan-csp  # Cash Secured Puts")
+            print("  python run_position_analysis.py --scan-cc   # Covered Calls")
+            return []
+        else:
+            print("Continuing to opportunity scanning...")
+    else:
+        print(f"\nAnalyzing {len(open_positions)} open position(s)...")
+        print("(Fetching current market data and running analysis...)\n")
 
-    recommendations = []
-    for idx, position in open_positions.iterrows():
-        try:
-            recommendation = position_analyzer.analyze_option_position(position, idx)
-            recommendations.append(recommendation)
+        for idx, position in open_positions.iterrows():
+            try:
+                recommendation = position_analyzer.analyze_option_position(position, idx)
+                recommendations.append(recommendation)
 
-            # Find rolling opportunities if action is ROLL
-            if recommendation.action == "ROLL":
-                rolls = rolling_finder.find_roll_opportunities(
-                    position.to_dict(),
-                    max_candidates=3
-                )
-                if rolls:
-                    # Convert to RollingOpportunity and attach to recommendation
-                    from src.portfolio.position_analyzer import RollingOpportunity
-                    best_roll = rolls[0]
-                    recommendation.roll_recommendation = RollingOpportunity(**best_roll)
+                # Find rolling opportunities if action is ROLL
+                if recommendation.action == "ROLL":
+                    rolls = rolling_finder.find_roll_opportunities(
+                        position.to_dict(),
+                        max_candidates=3
+                    )
+                    if rolls:
+                        # Convert to RollingOpportunity and attach to recommendation
+                        from src.portfolio.position_analyzer import RollingOpportunity
+                        best_roll = rolls[0]
+                        recommendation.roll_recommendation = RollingOpportunity(**best_roll)
 
-            print(f"  ✓ Analyzed {recommendation.ticker} ${recommendation.strike} {recommendation.option_type.upper()}")
+                print(f"  ✓ Analyzed {recommendation.ticker} ${recommendation.strike} {recommendation.option_type.upper()}")
 
-        except Exception as e:
-            print(f"  ✗ Error analyzing position {idx}: {e}")
-            continue
+            except Exception as e:
+                print(f"  ✗ Error analyzing position {idx}: {e}")
+                continue
 
-    print(f"\nAnalysis complete! {len(recommendations)} position(s) analyzed.")
+        print(f"\nAnalysis complete! {len(recommendations)} position(s) analyzed.")
 
     # ========================================================================
     # STEP 3: SCAN NEW OPPORTUNITIES (optional)
@@ -238,58 +244,11 @@ def run_position_analysis(
         print("\n" + "="*80)
         print("GENERATING HTML DASHBOARD")
         print("="*80)
-        print("\nCreating interactive HTML dashboard...")
-
-        try:
-            # Import here to avoid circular dependencies
-            from src.visualization.position_dashboard_generator import PositionDashboardGenerator
-
-            generator = PositionDashboardGenerator(output_dir=output_dir)
-
-            metadata = {
-                'scan_timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'market_status': market_status,
-                'capital_deployed': deployed_info['total_deployed'],
-                'capital_available': capital_info['remaining_for_new'],
-                'open_positions': len(recommendations),
-                'position_slots_available': capital_info['positions_available']
-            }
-
-            # Combine opportunities for HTML dashboard
-            new_opportunities = None
-            if csp_opportunities is not None or cc_opportunities is not None:
-                import pandas as pd
-                dfs = []
-                if csp_opportunities is not None and not csp_opportunities.empty:
-                    dfs.append(csp_opportunities)
-                if cc_opportunities is not None and not cc_opportunities.empty:
-                    dfs.append(cc_opportunities)
-                if dfs:
-                    new_opportunities = pd.concat(dfs, ignore_index=True)
-
-            output_path = generator.generate(
-                recommendations=recommendations,
-                new_opportunities=new_opportunities,
-                portfolio_summary=deployed_info,
-                capital_info=capital_info,
-                metadata=metadata
-            )
-
-            print(f"\n[SUCCESS] Dashboard generated!")
-            print(f"  Location: {output_path}")
-            print(f"  Size: {os.path.getsize(output_path) / 1024:.1f} KB")
-
-            if open_browser:
-                print(f"\n  Opening dashboard in browser...")
-                webbrowser.open(f'file:///{os.path.abspath(output_path)}')
-
-            print("\n" + "="*80 + "\n")
-
-        except Exception as e:
-            print(f"\n[ERROR] Error generating dashboard: {e}")
-            import traceback
-            traceback.print_exc()
-            print("  Continuing without HTML output...")
+        print("\n⚠️  HTML dashboard generation for position analysis is not yet implemented.")
+        print("    All results are displayed above in the console output.")
+        print("\n    For CSP opportunity dashboards, use:")
+        print("      python run_enhanced_csp_scan.py --html")
+        print("="*80 + "\n")
 
     return recommendations
 
@@ -411,25 +370,13 @@ Examples:
 
   # Scan for both CSP and CC opportunities
   python run_position_analysis.py --scan-csp --scan-cc
-
-  # Generate HTML dashboard
-  python run_position_analysis.py --html
-
-  # Full analysis with HTML dashboard
-  python run_position_analysis.py --scan-csp --scan-cc --html
-
-  # Generate HTML without opening browser
-  python run_position_analysis.py --html --no-browser
-
-  # Custom output directory
-  python run_position_analysis.py --html --output-dir custom/path
         """
     )
 
     parser.add_argument(
         '--html',
         action='store_true',
-        help='Generate interactive HTML dashboard'
+        help='Generate interactive HTML dashboard (not yet implemented)'
     )
 
     parser.add_argument(
