@@ -47,13 +47,15 @@ class CoveredCallAnalyzer:
         calls = self.greeks_calc.enrich_option_data(calls)
 
         # Filter for realistic strikes (reject extremely OTM strikes)
-        # For covered calls, typically want strikes within 0-50% above current price
-        # Anything more than 100% OTM is unrealistic for normal covered calls
+        # For covered calls, typically want OTM strikes (above current price)
+        # to avoid immediate assignment and maximize upside potential
         current_price = calls['current_stock_price'].iloc[0] if len(calls) > 0 else 0
         if current_price > 0:
             max_strike = current_price * 1.5  # Max 50% OTM
+            # Only show OTM calls (strikes above current price) for standard covered call strategy
+            # This avoids ITM calls which will almost certainly be assigned immediately
             calls = calls[
-                (calls['strike'] >= current_price * 0.95) &  # At least 5% ITM
+                (calls['strike'] > current_price) &  # OTM only (above current price)
                 (calls['strike'] <= max_strike)
             ].copy()
 

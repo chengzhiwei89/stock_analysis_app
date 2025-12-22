@@ -4,7 +4,7 @@ Modify these settings to customize your analysis
 """
 
 # ============================================================================
-# WATCHLIST - Tickers to analyze (30 tickers optimized for options income)
+# WATCHLIST - Tickers to analyze (32 tickers optimized for options income)
 # Research-backed selection: Score 75+, good liquidity, diverse sectors
 # ============================================================================
 WATCHLIST = [
@@ -28,12 +28,13 @@ WATCHLIST = [
     'MU',     # Micron - Score: 80, memory chips, cyclical
     'QCOM',   # Qualcomm - Score: 80, mobile/5G chips
 
-    # === Software & Tech Services (5) ===
+    # === Software & Tech Services (6) ===
     'CRM',    # Salesforce - Score: 85, CRM leader
     'ORCL',   # Oracle - Score: 80, database/cloud
     'CRWD',   # CrowdStrike - Score: 80, cybersecurity
     'CSCO',   # Cisco - Score: 80, networking, LOW capital ($7,063)
     'ANET',   # Arista Networks - Score: 80, cloud networking
+    'NET',    # Cloudflare - Score: 80, CDN/security, cloud infrastructure
 
     # === Financials (5) - Yield & Stability ===
     'JPM',    # JP Morgan - Score: 80, #1 US bank
@@ -57,28 +58,27 @@ WATCHLIST = [
     'SCCO',   # Southern Copper - Score: 85, best metals option
 ]
 
-# WATCHLIST SUMMARY (31 tickers total):
+# WATCHLIST SUMMARY (32 tickers total):
 #
 # Quality Distribution:
 #   Score 85 (Excellent): 11 tickers (SPY, INTC, SCCO, BA, CRM, GS, AAPL, MSFT, GOOGL, AMZN, AVGO)
-#   Score 80 (Very Good): 17 tickers (QQQ, META, TSLA, AMD, MU, QCOM, ORCL, CRWD, CSCO, ANET, JPM, BAC, MS, C, HD, NKE, CAT)
+#   Score 80 (Very Good): 18 tickers (QQQ, META, TSLA, AMD, MU, QCOM, ORCL, CRWD, CSCO, ANET, NET, JPM, BAC, MS, C, HD, NKE, CAT)
 #   Score 75 (Good): 3 tickers (NVDA, PFE)
 #
 # Capital Requirements (per contract):
-#   Under $10k: 7 tickers (PFE $2,476, BAC $5,257, NKE $6,911, CSCO $7,063, C $9,878, SCCO $12,934)
+#   Under $10k: 8 tickers (PFE $2,476, BAC $5,257, NKE $6,911, CSCO $7,063, NET ~$8,500, C $9,878, SCCO $12,934)
 #   $10k-$30k: 15 tickers
 #   Over $30k: 9 tickers
-#   Total for 1 contract each: ~$850,000
+#   Total for 1 contract each: ~$860,000
 #
 # Sector Balance:
-#   Tech/Semiconductors: 17 (55%) - AAPL, MSFT, GOOGL, AMZN, META, TSLA, NVDA, AMD, INTC, AVGO, MU, QCOM, CRM, ORCL, CRWD, CSCO, ANET
+#   Tech/Semiconductors: 18 (56%) - AAPL, MSFT, GOOGL, AMZN, META, TSLA, NVDA, AMD, INTC, AVGO, MU, QCOM, CRM, ORCL, CRWD, CSCO, ANET, NET
 #   Financials: 5 (16%) - JPM, BAC, GS, MS, C
 #   Consumer/Retail: 2 (6%) - HD, NKE
 #   Healthcare: 1 (3%) - PFE
 #   Industrials/Aerospace: 2 (6%) - BA, CAT
 #   Metals/Mining: 1 (3%) - SCCO
 #   ETFs: 2 (6%) - SPY, QQQ
-#   Infrastructure: 1 (3%) - ANET
 #
 # Liquidity Highlights:
 #   Highest Options Volume: TSLA (116/day), INTC (81/day), NVDA (86/day), AMZN (90/day)
