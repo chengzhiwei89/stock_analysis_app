@@ -209,6 +209,7 @@ def run_position_analysis(
                             min_premium=config.COVERED_CALL_SETTINGS['min_premium'],
                             min_annual_return=config.COVERED_CALL_SETTINGS['min_annual_return'],
                             max_days=config.COVERED_CALL_SETTINGS['max_days'],
+                            min_prob_otm=config.COVERED_CALL_ADVANCED.get('min_prob_otm'),
                             top_n=10
                         )
 

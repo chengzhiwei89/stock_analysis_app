@@ -18,6 +18,7 @@ class CoveredCallAnalyzer:
                               min_premium: float = 0.5,
                               min_annual_return: float = 10.0,
                               max_days: int = 60,
+                              min_prob_otm: Optional[float] = None,
                               min_delta: Optional[float] = None,
                               max_delta: Optional[float] = None) -> pd.DataFrame:
         """
@@ -28,6 +29,7 @@ class CoveredCallAnalyzer:
             min_premium: Minimum premium to collect ($ per share)
             min_annual_return: Minimum annualized return (%)
             max_days: Maximum days to expiration
+            min_prob_otm: Minimum probability OTM (% chance of keeping stock)
             min_delta: Minimum delta (e.g., 0.2)
             max_delta: Maximum delta (e.g., 0.4 for ~60% OTM probability)
 
@@ -113,6 +115,10 @@ class CoveredCallAnalyzer:
         # Filter by return
         filtered = filtered[filtered['annual_return'] >= min_annual_return]
 
+        # Filter by probability OTM if specified (higher = safer, more likely to keep stock)
+        if min_prob_otm is not None and 'prob_otm' in filtered.columns:
+            filtered = filtered[filtered['prob_otm'] >= min_prob_otm]
+
         # Filter by delta if specified
         if min_delta is not None and 'delta' in filtered.columns:
             filtered = filtered[filtered['delta'] >= min_delta]
@@ -142,6 +148,7 @@ class CoveredCallAnalyzer:
                             min_premium: float = 0.5,
                             min_annual_return: float = 15.0,
                             max_days: int = 45,
+                            min_prob_otm: Optional[float] = None,
                             top_n: int = 20) -> pd.DataFrame:
         """
         Get top covered call opportunities
@@ -160,7 +167,8 @@ class CoveredCallAnalyzer:
             options_df,
             min_premium=min_premium,
             min_annual_return=min_annual_return,
-            max_days=max_days
+            max_days=max_days,
+            min_prob_otm=min_prob_otm
         )
 
         if results.empty:

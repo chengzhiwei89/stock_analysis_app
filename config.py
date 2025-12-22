@@ -110,6 +110,7 @@ COVERED_CALL_ADVANCED = {
     'min_volume': 10,              # Minimum option volume for liquidity
     'min_open_interest': 50,       # Minimum open interest
     'max_bid_ask_spread_pct': 10,  # Maximum bid-ask spread as % of price
+    'min_prob_otm': 70.0,          # Minimum probability OTM (% chance of keeping stock)
     'prefer_otm': True,            # Prefer out-of-the-money options
     'target_distance_pct': 3.0,    # Target % above current price
 }
