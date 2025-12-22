@@ -289,23 +289,60 @@ class PositionAnalyzer:
         days_remaining: int
     ) -> float:
         """
-        Estimate current option price
-        In production, would fetch from live option chain
-        For now, use simplified decay model
+        Get current option price from live market data
+        Falls back to decay model if data unavailable
         """
         entry_premium = position['premium']
+        ticker = position['ticker']
+        strike = position['strike']
+        expiration = position['expiration']
+        option_type = position['option_type']
 
         if days_remaining <= 0:
-            # Expired, check if ITM
-            strike = position['strike']
-            if position['option_type'] == 'put':
+            # Expired, check if ITM (intrinsic value only)
+            if option_type == 'put':
                 return max(0, strike - current_price)
             else:
                 return max(0, current_price - strike)
 
-        # Simple decay model: assume 50% decay at midpoint
-        # This is a rough approximation
-        # In reality, would fetch actual bid/ask from option chain
+        # Try to fetch actual current option price from market
+        try:
+            import yfinance as yf
+            stock = yf.Ticker(ticker)
+
+            # Get option chain for this expiration
+            chain = stock.option_chain(expiration)
+
+            # Get the right chain (calls or puts)
+            if option_type == 'put':
+                options = chain.puts
+            else:
+                options = chain.calls
+
+            # Find matching strike
+            matching_option = options[options['strike'] == strike]
+
+            if not matching_option.empty:
+                # For sold options, we'd BUY BACK at the ASK price (seller's asking price)
+                # NOT the bid (which is what buyers are willing to pay)
+                bid = matching_option['bid'].iloc[0]
+                ask = matching_option['ask'].iloc[0]
+                last = matching_option['lastPrice'].iloc[0]
+
+                # Use ask if available (cost to buy back), then mid, then last
+                if ask > 0:
+                    return ask
+                elif bid > 0 and ask > 0:
+                    return (bid + ask) / 2  # Use mid if both available
+                elif last > 0:
+                    return last
+                elif bid > 0:
+                    return bid  # Last resort
+        except Exception as e:
+            # If fetch fails, fall back to decay model
+            pass
+
+        # Fallback: time decay model (conservative estimate)
         try:
             entry_date = datetime.strptime(position['open_date'], '%Y-%m-%d')
             exp_date = datetime.strptime(position['expiration'], '%Y-%m-%d')
@@ -320,7 +357,7 @@ class PositionAnalyzer:
         except:
             pass
 
-        return entry_premium * 0.5  # Fallback: assume 50% decay
+        return entry_premium * 0.5  # Final fallback: assume 50% decay
 
     def _calculate_pnl_metrics(
         self,
